@@ -42,10 +42,10 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <Link to="/dashboard">
-              <Button variant="hero-outline" size="sm">Dashboard</Button>
+            <Link to="/auth">
+              <Button variant="hero-outline" size="sm">Sign in</Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero" size="sm">Start Free</Button>
             </Link>
           </div>
@@ -74,7 +74,7 @@ export default function LandingPage() {
             </motion.p>
 
             <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <Button variant="hero" size="lg" className="text-base px-8 h-12">
                   Start for free <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
