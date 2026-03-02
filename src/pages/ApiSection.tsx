@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Key, Copy, Eye, EyeOff, Plus, Check, Code, Trash2 } from "lucide-react";
-
-const mockKeys = [
-  { id: "1", name: "Production Key", key: "vv_live_sk_7f3a8b2c...d4e1", created: "2025-12-01", lastUsed: "2 hours ago" },
-  { id: "2", name: "Development Key", key: "vv_test_sk_9c1d2e4f...b3a5", created: "2025-12-15", lastUsed: "1 day ago" },
-];
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Key, Copy, Eye, EyeOff, Plus, Check, Code, Trash2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function CodeBlock({ title, code, onCopy, copied }: { title: string; code: string; onCopy: () => void; copied: boolean }) {
   return (
@@ -24,14 +25,59 @@ function CodeBlock({ title, code, onCopy, copied }: { title: string; code: strin
 }
 
 export default function ApiSection() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [copied, setCopied] = useState<string | null>(null);
   const [showKey, setShowKey] = useState<string | null>(null);
+  const [showNewKey, setShowNewKey] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+
+  const { data: apiKeys = [], isLoading } = useQuery({
+    queryKey: ["api_keys", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("api_keys").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const generateKey = useMutation({
+    mutationFn: async (name: string) => {
+      const { data, error } = await supabase.functions.invoke("generate-api-key", {
+        body: { name },
+      });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["api_keys"] });
+      setGeneratedKey(data.key);
+      setNewKeyName("");
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteKey = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("api_keys").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["api_keys"] }),
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopied(id);
     setTimeout(() => setCopied(null), 2000);
+    toast({ title: "Copied!", description: "Copied to clipboard" });
   };
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const queryEndpoint = `${supabaseUrl}/functions/v1/vault-query`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,34 +94,46 @@ export default function ApiSection() {
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">API Keys</h2>
-              <Button variant="hero" size="sm"><Plus className="w-4 h-4" /> Generate Key</Button>
+              <Button variant="hero" size="sm" onClick={() => setShowNewKey(true)}><Plus className="w-4 h-4" /> Generate Key</Button>
             </div>
-            <div className="space-y-3">
-              {mockKeys.map((k) => (
-                <div key={k.id} className="p-4 rounded-xl border border-border bg-card flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Key className="w-4 h-4 text-primary" />
+
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : apiKeys.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-xl">
+                <Key className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No API keys yet. Generate one to get started.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {apiKeys.map((k) => (
+                  <div key={k.id} className="p-4 rounded-xl border border-border bg-card flex items-center gap-4">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Key className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{k.name}</p>
+                      <p className="text-xs font-mono text-muted-foreground truncate">
+                        {showKey === k.id ? k.key_prefix + "..." : k.key_prefix + "••••••••••••••••"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowKey(showKey === k.id ? null : k.id)} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        {showKey === k.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button onClick={() => handleCopy(k.key_prefix, k.id)} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        {copied === k.id ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                      <button onClick={() => deleteKey.mutate(k.id)} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{k.name}</p>
-                    <p className="text-xs font-mono text-muted-foreground truncate">
-                      {showKey === k.id ? "vv_live_sk_7f3a8b2c1d9e4f6a8b2c1d9e4f6ad4e1" : k.key}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setShowKey(showKey === k.id ? null : k.id)} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                      {showKey === k.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => handleCopy(k.key, k.id)} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                      {copied === k.id ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    <button className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mb-10">
@@ -83,29 +141,40 @@ export default function ApiSection() {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="px-4 py-2 border-b border-border flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/20 text-primary">POST</span>
-                <code className="text-sm font-mono text-foreground">/api/v1/query</code>
+                <code className="text-sm font-mono text-foreground">/functions/v1/vault-query</code>
               </div>
               <div className="p-4 space-y-4">
                 <p className="text-sm text-muted-foreground">Send a message and receive relevant memories + AI-generated answer.</p>
-                <CodeBlock title="Request" onCopy={() => handleCopy("curl", "req")} copied={copied === "req"} code={`curl -X POST https://api.vibevault.app/v1/query \\
+                <CodeBlock
+                  title="Request"
+                  onCopy={() => handleCopy(`curl -X POST ${queryEndpoint}`, "req")}
+                  copied={copied === "req"}
+                  code={`curl -X POST ${queryEndpoint} \\
   -H "Authorization: Bearer vv_live_sk_..." \\
+  -H "X-API-Key: your_vibevault_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "vault_id": "my-founder-brain",
+    "vault_id": "your-vault-uuid",
     "message": "What did I learn about RAG?",
     "top_k": 5
-  }'`} />
-                <CodeBlock title="Response" onCopy={() => handleCopy("response", "res")} copied={copied === "res"} code={`{
+  }'`}
+                />
+                <CodeBlock
+                  title="Response"
+                  onCopy={() => handleCopy("response", "res")}
+                  copied={copied === "res"}
+                  code={`{
   "answer": "Based on your notes, RAG systems perform best with...",
   "memories": [
     {
-      "fact": "Recursive chunking of 512 tokens...",
-      "score": 0.94,
-      "source": "research-notes.pdf"
+      "id": "uuid",
+      "content": "Recursive chunking of 512 tokens...",
+      "similarity": 0.94,
+      "source_file": "research-notes.pdf"
     }
-  ],
-  "tokens_used": 1240
-}`} />
+  ]
+}`}
+                />
               </div>
             </div>
           </div>
@@ -113,18 +182,74 @@ export default function ApiSection() {
           <div>
             <h2 className="text-lg font-semibold text-foreground mb-4">One-Line Integration</h2>
             <div className="space-y-4">
-              <CodeBlock title="Claude / MCP" onCopy={() => handleCopy("claude", "claude")} copied={copied === "claude"} code={`# Add to your Claude project system prompt:
+              <CodeBlock
+                title="Claude / MCP"
+                onCopy={() => handleCopy("claude", "claude")}
+                copied={copied === "claude"}
+                code={`# Add to your Claude project system prompt:
 "For context, query my VibeVault: 
-curl -s api.vibevault.app/v1/query -H 'Auth: Bearer $VV_KEY' -d '{message: USER_QUERY}'"`} />
-              <CodeBlock title="LangGraph / Python" onCopy={() => handleCopy("python", "python")} copied={copied === "python"} code={`from vibevault import VibeVault
+curl -s ${queryEndpoint} \\
+  -H 'X-API-Key: $VV_KEY' \\
+  -d '{\"message\": USER_QUERY, \"vault_id\": \"YOUR_VAULT_ID\"}'"`}
+              />
+              <CodeBlock
+                title="Python / LangGraph"
+                onCopy={() => handleCopy("python", "python")}
+                copied={copied === "python"}
+                code={`import requests
 
-vv = VibeVault(api_key="vv_live_sk_...")
-memories = vv.query("What do I know about embeddings?")
-# Returns: List[Memory] with .fact, .score, .source`} />
+def query_vault(message: str, vault_id: str, api_key: str):
+    resp = requests.post(
+        "${queryEndpoint}",
+        headers={"X-API-Key": api_key},
+        json={"message": message, "vault_id": vault_id, "top_k": 5}
+    )
+    return resp.json()  # {"answer": "...", "memories": [...]}`}
+              />
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Generate Key Dialog */}
+      <Dialog open={showNewKey} onOpenChange={(open) => { setShowNewKey(open); if (!open) { setGeneratedKey(null); } }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Generate API Key</DialogTitle>
+          </DialogHeader>
+          {generatedKey ? (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Your new API key (copy it now — won't be shown again):</p>
+                <div className="flex items-center gap-2">
+                  <code className="text-xs font-mono text-primary flex-1 break-all">{generatedKey}</code>
+                  <button onClick={() => handleCopy(generatedKey, "new-key")} className="p-1.5 rounded text-muted-foreground hover:text-foreground">
+                    {copied === "new-key" ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <Button variant="hero" className="w-full" onClick={() => { setShowNewKey(false); setGeneratedKey(null); }}>Done</Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Input
+                placeholder="e.g. Production Key"
+                value={newKeyName}
+                onChange={(e) => setNewKeyName(e.target.value)}
+                className="bg-muted/50 border-border"
+              />
+              <Button
+                variant="hero"
+                className="w-full"
+                onClick={() => newKeyName.trim() && generateKey.mutate(newKeyName.trim())}
+                disabled={generateKey.isPending || !newKeyName.trim()}
+              >
+                {generateKey.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate Key"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
