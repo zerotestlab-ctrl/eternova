@@ -143,7 +143,15 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button variant={tier.highlighted ? "hero" : "hero-outline"} className="w-full">{tier.cta}</Button>
+                {tier.highlighted ? (
+                  <a href="https://paystack.shop/pay/4b8mdpttkf" target="_blank" rel="noopener noreferrer" className="block">
+                    <Button variant="hero" className="w-full">{tier.cta}</Button>
+                  </a>
+                ) : (
+                  <Link to="/auth">
+                    <Button variant="hero-outline" className="w-full">{tier.cta}</Button>
+                  </Link>
+                )}
               </motion.div>
             ))}
           </div>

@@ -1,1 +1,16 @@
 project_id = "ancylzkwlfqcwvzlajie"
+
+[functions.process-vault]
+verify_jwt = false
+
+[functions.semantic-search]
+verify_jwt = false
+
+[functions.vault-chat]
+verify_jwt = false
+
+[functions.generate-api-key]
+verify_jwt = false
+
+[functions.vault-query]
+verify_jwt = false
