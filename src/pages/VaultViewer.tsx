@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,35 +12,59 @@ import {
   MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Search, ArrowLeft, MessageSquare, Sparkles, Clock, X, Loader2, Brain } from "lucide-react";
+import {
+  Search, ArrowLeft, MessageSquare, Sparkles, Clock, X, Loader2, Brain,
+  FileText, Calendar, Eye, Layers
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const makeNodeStyle = (highlight = false) => ({
-  background: "hsl(220, 18%, 12%)",
+  background: highlight ? "hsl(173, 70%, 10%)" : "hsl(220, 18%, 12%)",
   color: "hsl(210, 20%, 92%)",
-  border: highlight ? "1px solid rgba(45, 212, 191, 0.4)" : "1px solid hsl(220, 14%, 20%)",
-  borderRadius: "12px",
-  padding: "12px 16px",
-  fontSize: "13px",
+  border: highlight ? "1.5px solid hsl(173, 70%, 45%)" : "1px solid hsl(220, 14%, 22%)",
+  borderRadius: "14px",
+  padding: "14px 18px",
+  fontSize: "12px",
   fontWeight: highlight ? 600 : 400,
+  maxWidth: "200px",
+  lineHeight: "1.4",
+  boxShadow: highlight ? "0 0 20px hsl(173, 70%, 30% / 0.3)" : "none",
 });
 
-const edgeStyle = { stroke: "rgba(45, 212, 191, 0.4)" };
+const edgeStyle = { stroke: "hsl(173, 70%, 40%)", strokeWidth: 1.5 };
+
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function getSourceIcon(sourceFile: string | null) {
+  if (!sourceFile) return "💬";
+  if (sourceFile.endsWith(".pdf")) return "📄";
+  if (sourceFile.endsWith(".txt")) return "📝";
+  if (sourceFile.includes("notion")) return "📓";
+  if (sourceFile.includes("chat")) return "💬";
+  return "📁";
+}
 
 export default function VaultViewer() {
   const { id: vaultId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [selectedMemory, setSelectedMemory] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<"timeline" | "graph">("timeline");
 
   const { data: vault } = useQuery({
     queryKey: ["vault", vaultId],
@@ -67,42 +91,63 @@ export default function VaultViewer() {
     enabled: !!vaultId,
   });
 
-  // Build graph nodes from memories
-  const nodes: Node[] = memories.slice(0, 15).map((m, i) => {
+  // Filter memories by search
+  const displayedMemories = activeSearch
+    ? memories.filter(m =>
+        m.content.toLowerCase().includes(activeSearch.toLowerCase()) ||
+        (m.source_file ?? "").toLowerCase().includes(activeSearch.toLowerCase())
+      )
+    : searchResults.length > 0
+    ? searchResults
+    : memories;
+
+  // Build graph nodes
+  const nodes: Node[] = memories.slice(0, 18).map((m, i) => {
     const angle = (i / Math.max(memories.length, 1)) * 2 * Math.PI;
-    const radius = 200;
-    const x = 350 + radius * Math.cos(angle);
-    const y = 200 + radius * Math.sin(angle);
+    const radius = 220;
+    const x = 380 + radius * Math.cos(angle);
+    const y = 220 + radius * Math.sin(angle);
     return {
       id: m.id,
       position: { x, y },
-      data: { label: m.content.slice(0, 50) + (m.content.length > 50 ? "..." : "") },
+      data: { label: m.content.slice(0, 45) + (m.content.length > 45 ? "..." : "") },
       style: makeNodeStyle(i === 0),
     };
   });
 
-  const edges: Edge[] = memories.slice(1, 10).map((m, i) => ({
+  const edges: Edge[] = memories.slice(1, 12).map((m, i) => ({
     id: `e${i}`,
     source: memories[0]?.id ?? "",
     target: m.id,
     style: edgeStyle,
-    markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(45, 212, 191, 0.4)" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "hsl(173, 70%, 40%)" },
+    animated: i < 3,
   })).filter(e => e.source && e.target);
 
   const handleSearch = async () => {
-    if (!searchQuery.trim() || !vaultId) return;
+    const q = searchQuery.trim();
+    if (!q || !vaultId) return;
+    setActiveSearch(q);
     setSearching(true);
     try {
       const { data, error } = await supabase.functions.invoke("semantic-search", {
-        body: { query: searchQuery, vault_id: vaultId },
+        body: { query: q, vault_id: vaultId },
       });
       if (error) throw new Error(error.message);
       setSearchResults(data.results ?? []);
     } catch (err: any) {
-      toast({ title: "Search failed", description: err.message, variant: "destructive" });
+      // Fallback to local filter
+      setSearchResults([]);
+      toast({ title: "Semantic search unavailable", description: "Showing local results instead.", variant: "default" });
     } finally {
       setSearching(false);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setActiveSearch("");
+    setSearchResults([]);
   };
 
   const handleChat = async () => {
@@ -111,7 +156,6 @@ export default function VaultViewer() {
     setChatInput("");
     setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setChatLoading(true);
-
     try {
       const { data, error } = await supabase.functions.invoke("vault-chat", {
         body: { message: userMsg, vault_id: vaultId },
@@ -130,128 +174,309 @@ export default function VaultViewer() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border bg-card/50 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 px-4 md:px-6 py-3 flex items-center justify-between gap-3 sticky top-0 z-10">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div>
-            <h1 className="font-semibold text-foreground">{vault?.name ?? "Loading..."}</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className="min-w-0">
+            <h1 className="font-semibold text-foreground text-sm md:text-base truncate">{vault?.name ?? "Loading..."}</h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
               {vault?.fact_count ?? 0} facts · {vault?.memory_count ?? 0} memories · {formatTokens(vault?.token_count ?? 0)} tokens
             </p>
           </div>
         </div>
-        <Button variant={showChat ? "hero" : "hero-outline"} size="sm" onClick={() => setShowChat(!showChat)}>
-          <MessageSquare className="w-4 h-4" /> Test Memory
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => setActiveTab("timeline")}
+              className={`px-2 md:px-3 py-1.5 text-xs flex items-center gap-1 transition-colors ${activeTab === "timeline" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <Layers className="w-3 h-3" /> <span className="hidden sm:inline">Timeline</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("graph")}
+              className={`px-2 md:px-3 py-1.5 text-xs flex items-center gap-1 transition-colors border-l border-border ${activeTab === "graph" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <Brain className="w-3 h-3" /> <span className="hidden sm:inline">Graph</span>
+            </button>
+          </div>
+          <Button variant={showChat ? "hero" : "hero-outline"} size="sm" onClick={() => setShowChat(!showChat)} className="text-xs">
+            <MessageSquare className="w-3.5 h-3.5" /> <span className="hidden sm:inline ml-1">Test Memory</span>
+          </Button>
+        </div>
       </header>
 
-      <div className="flex-1 flex">
-        <div className="flex-1 flex flex-col">
-          <div className="p-4 border-b border-border">
-            <div className="relative max-w-xl flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search your vault semantically..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="pl-10 bg-muted/50 border-border"
-                />
-              </div>
-              <Button variant="hero-outline" size="sm" onClick={handleSearch} disabled={searching}>
-                {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              </Button>
-            </div>
+      {/* Search Bar */}
+      <div className="px-4 md:px-6 py-3 border-b border-border bg-card/30">
+        <div className="flex gap-2 max-w-2xl">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search memories semantically..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="pl-10 bg-muted/50 border-border text-sm h-9"
+            />
           </div>
+          {activeSearch && (
+            <Button variant="ghost" size="sm" onClick={clearSearch} className="text-muted-foreground">
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+          <Button variant="hero-outline" size="sm" onClick={handleSearch} disabled={searching} className="h-9">
+            {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          </Button>
+        </div>
+        {activeSearch && (
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Showing {displayedMemories.length} result{displayedMemories.length !== 1 ? "s" : ""} for "{activeSearch}"
+          </p>
+        )}
+      </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row">
-            <div className="flex-1 min-h-[400px] relative">
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          {activeTab === "timeline" ? (
+            <div className="p-4 md:p-6 max-w-4xl mx-auto">
+              {memories.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
+                  <Brain className="w-12 h-12 opacity-30" />
+                  <p className="text-sm text-center">No memories yet. <Link to="/upload" className="text-primary hover:underline">Upload documents</Link> to get started.</p>
+                </div>
+              ) : displayedMemories.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
+                  <Search className="w-10 h-10 opacity-30" />
+                  <p className="text-sm">No memories match your search.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {displayedMemories.map((memory: any, i: number) => {
+                    const title = memory.content.split(" ").slice(0, 6).join(" ") + (memory.content.split(" ").length > 6 ? "..." : "");
+                    const excerpt = memory.content.slice(0, 120) + (memory.content.length > 120 ? "..." : "");
+                    const date = formatDate(memory.source_date ?? memory.created_at);
+                    const sourceIcon = getSourceIcon(memory.source_file);
+                    const similarity = (memory as any).similarity;
+                    const isHighlighted = activeSearch && memory.content.toLowerCase().includes(activeSearch.toLowerCase());
+
+                    return (
+                      <motion.div
+                        key={memory.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03, duration: 0.25 }}
+                        className={`flex gap-3 md:gap-4 group`}
+                      >
+                        {/* Timeline dot */}
+                        <div className="flex flex-col items-center flex-shrink-0 pt-3 hidden sm:flex">
+                          <div className={`w-2.5 h-2.5 rounded-full border-2 flex-shrink-0 ${isHighlighted ? "bg-primary border-primary" : "bg-card border-border group-hover:border-primary/50"} transition-colors`} />
+                          {i < displayedMemories.length - 1 && (
+                            <div className="w-px flex-1 bg-border mt-1 min-h-[20px]" />
+                          )}
+                        </div>
+
+                        {/* Card */}
+                        <div className={`flex-1 mb-3 p-3 md:p-4 rounded-xl border transition-all cursor-pointer ${
+                          isHighlighted
+                            ? "border-primary/40 bg-primary/5 shadow-[0_0_12px_hsl(173,70%,30%/0.15)]"
+                            : "border-border bg-card hover:border-primary/20 hover:bg-card/80"
+                        }`}
+                          onClick={() => setSelectedMemory(memory)}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base flex-shrink-0">{sourceIcon}</span>
+                              <h3 className="font-semibold text-foreground text-sm truncate">{title}</h3>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {similarity !== undefined && (
+                                <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                  {(similarity * 100).toFixed(0)}%
+                                </span>
+                              )}
+                              {memory.fact_type && (
+                                <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded hidden md:block">
+                                  {memory.fact_type}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-2.5">{excerpt}</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                              {date && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" /> {date}
+                                </span>
+                              )}
+                              {memory.source_file && (
+                                <span className="flex items-center gap-1 truncate max-w-[120px] md:max-w-none">
+                                  <FileText className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{memory.source_file}</span>
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              className="text-xs text-primary hover:underline flex items-center gap-1 flex-shrink-0"
+                              onClick={(e) => { e.stopPropagation(); setSelectedMemory(memory); }}
+                            >
+                              <Eye className="w-3 h-3" /> View full
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Graph View */
+            <div className="h-full min-h-[500px] relative overflow-auto">
               {memories.length === 0 ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
                   <Brain className="w-12 h-12 opacity-30" />
-                  <p className="text-sm">No memories yet. <Link to="/upload" className="text-primary hover:underline">Upload documents</Link> to get started.</p>
+                  <p className="text-sm text-center px-4">No memories yet. <Link to="/upload" className="text-primary hover:underline">Upload documents</Link> to get started.</p>
                 </div>
               ) : (
-                <ReactFlow nodes={nodes} edges={edges} fitView proOptions={{ hideAttribution: true }} style={{ background: "hsl(220, 20%, 6%)" }}>
-                  <Background color="hsl(220, 14%, 14%)" gap={40} size={1} />
-                  <Controls style={{ background: "hsl(220, 18%, 12%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "8px" }} />
-                </ReactFlow>
+                <div className="w-full h-full min-h-[500px] min-w-[600px]">
+                  <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    fitView
+                    fitViewOptions={{ padding: 0.3 }}
+                    proOptions={{ hideAttribution: true }}
+                    style={{ background: "hsl(220, 20%, 6%)" }}
+                    minZoom={0.3}
+                    maxZoom={2}
+                  >
+                    <Background color="hsl(220, 14%, 14%)" gap={40} size={1} />
+                    <Controls style={{ background: "hsl(220, 18%, 12%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "8px" }} />
+                  </ReactFlow>
+                </div>
               )}
             </div>
-
-            {searchResults.length > 0 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="w-full lg:w-96 border-l border-border bg-card/50 p-4 overflow-y-auto">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" /> Semantic Results
-                  </h3>
-                  <button onClick={() => setSearchResults([])} className="text-muted-foreground hover:text-foreground">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {searchResults.map((r: any) => (
-                    <div key={r.id} className="p-3 rounded-lg border border-border bg-background hover:border-primary/20 transition-colors">
-                      <p className="text-sm text-foreground mb-2">{r.content}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="text-primary font-mono">{(r.similarity * 100).toFixed(0)}% match</span>
-                        {r.source_file && <span>{r.source_file}</span>}
-                        {r.source_date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.source_date.slice(0, 10)}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
+          )}
         </div>
 
-        {showChat && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="w-full lg:w-96 border-l border-border bg-card/50 flex flex-col">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" /> Memory Playground
-              </h3>
-              <button onClick={() => setShowChat(false)} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-              {chatMessages.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center mt-8">Ask anything about this vault's memories...</p>
-              )}
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] p-3 rounded-lg text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                    {msg.content}
+        {/* Test Memory Chat Panel */}
+        <AnimatePresence>
+          {showChat && (
+            <motion.div
+              initial={{ opacity: 0, x: 20, width: 0 }}
+              animate={{ opacity: 1, x: 0, width: "auto" }}
+              exit={{ opacity: 0, x: 20, width: 0 }}
+              className="border-l border-border bg-card/50 flex flex-col fixed right-0 top-0 bottom-0 z-20 w-full sm:w-96 sm:relative sm:top-auto sm:bottom-auto sm:right-auto sm:z-auto"
+            >
+              <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+                <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" /> Memory Playground
+                </h3>
+                <button onClick={() => setShowChat(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                {chatMessages.length === 0 && (
+                  <div className="text-center mt-8 space-y-3">
+                    <Brain className="w-8 h-8 text-primary/40 mx-auto" />
+                    <p className="text-sm text-muted-foreground">Ask anything about this vault's memories...</p>
+                    <div className="space-y-2">
+                      {["What facts are stored here?", "Summarize the key topics", "What dates are mentioned?"].map(q => (
+                        <button key={q} onClick={() => setChatInput(q)}
+                          className="block w-full text-left text-xs text-muted-foreground hover:text-foreground bg-muted/30 hover:bg-muted/60 border border-border rounded-lg px-3 py-2 transition-colors">
+                          {q}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {chatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-muted p-3 rounded-lg">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                )}
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[88%] p-3 rounded-xl text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}>
+                      {msg.content}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-            <div className="p-4 border-t border-border flex gap-2">
-              <Input
-                placeholder="Ask your vault..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleChat()}
-                className="bg-muted/50 border-border"
-                disabled={chatLoading}
-              />
-              <Button variant="hero" size="icon" onClick={handleChat} disabled={chatLoading}>
-                {chatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              </Button>
-            </div>
-          </motion.div>
-        )}
+                ))}
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted p-3 rounded-xl flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">Thinking...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="p-4 border-t border-border flex gap-2 flex-shrink-0">
+                <Input
+                  placeholder="Ask your vault..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleChat()}
+                  className="bg-muted/50 border-border text-sm"
+                  disabled={chatLoading}
+                />
+                <Button variant="hero" size="icon" onClick={handleChat} disabled={chatLoading || !chatInput.trim()}>
+                  {chatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Full Memory Modal */}
+      <Dialog open={!!selectedMemory} onOpenChange={() => setSelectedMemory(null)}>
+        <DialogContent className="bg-card border-border mx-4 w-[calc(100vw-2rem)] max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-foreground text-base leading-snug pr-6">
+              {selectedMemory?.content.split(" ").slice(0, 8).join(" ")}{selectedMemory?.content.split(" ").length > 8 ? "..." : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedMemory && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {selectedMemory.fact_type && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{selectedMemory.fact_type}</span>
+                )}
+                {selectedMemory.source_file && (
+                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full flex items-center gap-1">
+                    <FileText className="w-3 h-3" /> {selectedMemory.source_file}
+                  </span>
+                )}
+                {(selectedMemory.source_date ?? selectedMemory.created_at) && (
+                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> {formatDate(selectedMemory.source_date ?? selectedMemory.created_at)}
+                  </span>
+                )}
+              </div>
+              <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedMemory.content}</p>
+              </div>
+              {selectedMemory.metadata && Object.keys(selectedMemory.metadata).length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Relations & Metadata</p>
+                  <div className="space-y-1">
+                    {Object.entries(selectedMemory.metadata as Record<string, any>).map(([k, v]) => (
+                      <div key={k} className="flex gap-2 text-xs">
+                        <span className="text-muted-foreground font-mono">{k}:</span>
+                        <span className="text-foreground">{typeof v === "object" ? JSON.stringify(v) : String(v)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
