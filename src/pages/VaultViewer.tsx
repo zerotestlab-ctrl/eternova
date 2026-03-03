@@ -209,7 +209,7 @@ export default function VaultViewer() {
       </header>
 
       {/* Search Bar */}
-      <div className="px-4 md:px-6 py-3 border-b border-border bg-card/30">
+      <div className="px-4 md:px-6 py-3 border-b" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 9%)" }}>
         <div className="flex gap-2 max-w-2xl">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -369,7 +369,8 @@ export default function VaultViewer() {
               initial={{ opacity: 0, x: 20, width: 0 }}
               animate={{ opacity: 1, x: 0, width: "auto" }}
               exit={{ opacity: 0, x: 20, width: 0 }}
-              className="border-l border-border bg-card/50 flex flex-col fixed right-0 top-0 bottom-0 z-20 w-full sm:w-96 sm:relative sm:top-auto sm:bottom-auto sm:right-auto sm:z-auto"
+              className="border-l flex flex-col fixed right-0 top-0 bottom-0 z-20 w-full sm:w-96 sm:relative sm:top-auto sm:bottom-auto sm:right-auto sm:z-auto"
+              style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 9%)" }}
             >
               <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
                 <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
