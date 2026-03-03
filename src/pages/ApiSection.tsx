@@ -80,8 +80,8 @@ export default function ApiSection() {
   const queryEndpoint = `${supabaseUrl}/functions/v1/vault-query`;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 px-6 py-3 flex items-center gap-4">
+    <div className="min-h-screen" style={{ background: "hsl(220, 20%, 6%)" }}>
+      <header className="border-b px-6 py-3 flex items-center gap-4" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
         <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
         <div>
           <h1 className="font-semibold text-foreground">API Access</h1>
@@ -138,7 +138,7 @@ export default function ApiSection() {
 
           <div className="mb-10">
             <h2 className="text-lg font-semibold text-foreground mb-4">REST Endpoint</h2>
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(220, 14%, 18%)", background: "hsl(220, 18%, 10%)" }}>
               <div className="px-4 py-2 border-b border-border flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/20 text-primary">POST</span>
                 <code className="text-sm font-mono text-foreground">/functions/v1/vault-query</code>
