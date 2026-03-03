@@ -103,16 +103,16 @@ export default function UploadWizard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 px-6 py-3 flex items-center gap-4">
-        <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
+      <header className="border-b border-border bg-card/50 px-4 md:px-6 py-3 flex items-center gap-3">
+        <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"><ArrowLeft className="w-5 h-5" /></Link>
         <div>
-          <h1 className="font-semibold text-foreground">Upload Wizard</h1>
+          <h1 className="font-semibold text-foreground text-sm md:text-base">Upload Wizard</h1>
           <p className="text-xs text-muted-foreground">Upload documents to extract memories</p>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-12 max-w-2xl">
-        <div className="flex items-center gap-4 mb-12">
+      <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 max-w-2xl">
+        <div className="flex items-center gap-2 md:gap-4 mb-8 md:mb-12 overflow-x-auto pb-1">
           {stepNames.map((step, i) => (
             <div key={step} className="flex items-center gap-2 flex-1">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
