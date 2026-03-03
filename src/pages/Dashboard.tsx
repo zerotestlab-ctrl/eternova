@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, MoreHorizontal, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink } from "lucide-react";
+import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [showNewVault, setShowNewVault] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newVaultName, setNewVaultName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -76,6 +77,22 @@ export default function Dashboard() {
       setShowNewVault(false);
       setNewVaultName("");
       navigate(`/vault/${vault.id}`);
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteVault = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete all memories first
+      await supabase.from("memories").delete().eq("vault_id", id);
+      const { error } = await supabase.from("vaults").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vaults"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setDeleteTarget(null);
+      toast({ title: "Vault deleted", description: "Vault and all memories permanently removed." });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
@@ -150,10 +167,10 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "hsl(220, 20%, 6%)" }}>
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 min-h-screen border-r border-border bg-card/50 p-4">
+        <aside className="hidden lg:flex flex-col w-64 min-h-screen border-r p-4" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
           <SidebarContent />
         </aside>
 
@@ -165,7 +182,8 @@ export default function Dashboard() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+                className="fixed inset-0 z-40 lg:hidden"
+                style={{ background: "rgba(0,0,0,0.6)" }}
                 onClick={() => setSidebarOpen(false)}
               />
               <motion.aside
@@ -173,7 +191,8 @@ export default function Dashboard() {
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed left-0 top-0 bottom-0 w-72 bg-card border-r border-border z-50 flex flex-col p-4 lg:hidden"
+                className="fixed left-0 top-0 bottom-0 w-72 z-50 flex flex-col p-4 lg:hidden border-r"
+                style={{ background: "hsl(220, 18%, 8%)", borderColor: "hsl(220, 14%, 16%)" }}
               >
                 <button
                   className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
@@ -239,7 +258,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
               {stats.map((s, i) => (
                 <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}
-                  className="p-3 md:p-4 rounded-xl border border-border bg-card">
+                  className="p-3 md:p-4 rounded-xl border"
+                  style={{ background: "hsl(220, 18%, 10%)", borderColor: "hsl(220, 14%, 18%)" }}>
                   <div className="flex items-center gap-2 mb-2">
                     <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary flex-shrink-0" />
                     <span className="text-xs text-muted-foreground truncate">{s.label}</span>
@@ -257,7 +277,7 @@ export default function Dashboard() {
             </div>
 
             {!isPro && vaults.length >= 1 && (
-              <div className="mb-4 p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between gap-3">
+              <div className="mb-4 p-3 rounded-lg border border-primary/20 flex items-center justify-between gap-3" style={{ background: "hsl(175, 80%, 50%, 0.06)" }}>
                 <p className="text-xs text-muted-foreground flex items-center gap-2">
                   <Crown className="w-4 h-4 text-primary flex-shrink-0" />
                   Free tier: 1 vault max. Upgrade to Pro for unlimited vaults.
@@ -276,24 +296,37 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {vaults.map((vault, i) => (
                   <motion.div key={vault.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05, duration: 0.3 }}>
-                    <Link to={`/vault/${vault.id}`} className="block p-4 md:p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-all duration-300 group">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                          <Folder className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                    <div className="relative p-4 md:p-5 rounded-xl border transition-all duration-300 group"
+                      style={{ background: "hsl(220, 18%, 10%)", borderColor: "hsl(220, 14%, 18%)" }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = "hsl(175, 80%, 50%, 0.3)")}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = "hsl(220, 14%, 18%)")}>
+                      {/* Delete button */}
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: vault.id, name: vault.name }); }}
+                        className="absolute top-3 right-3 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                        title="Delete vault"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
+                      <Link to={`/vault/${vault.id}`} className="block">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                            <Folder className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                          </div>
                         </div>
-                        <button className="text-muted-foreground hover:text-foreground" onClick={(e) => e.preventDefault()}><MoreHorizontal className="w-4 h-4" /></button>
-                      </div>
-                      <h3 className="font-semibold text-foreground mb-1 truncate">{vault.name}</h3>
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{vault.description ?? "No description"}</p>
-                      <div className="flex flex-wrap gap-2 md:gap-4 text-xs text-muted-foreground">
-                        <span>{vault.fact_count} facts</span>
-                        <span>{vault.memory_count} memories</span>
-                        <span>{formatTokens(vault.token_count)} tokens</span>
-                      </div>
-                      <div className="mt-3 flex items-center gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                        Open vault <ArrowRight className="w-3 h-3" />
-                      </div>
-                    </Link>
+                        <h3 className="font-semibold text-foreground mb-1 truncate pr-8">{vault.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{vault.description ?? "No description"}</p>
+                        <div className="flex flex-wrap gap-2 md:gap-4 text-xs text-muted-foreground">
+                          <span>{vault.fact_count} facts</span>
+                          <span>{vault.memory_count} memories</span>
+                          <span>{formatTokens(vault.token_count)} tokens</span>
+                        </div>
+                        <div className="mt-3 flex items-center gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          Open vault <ArrowRight className="w-3 h-3" />
+                        </div>
+                      </Link>
+                    </div>
                   </motion.div>
                 ))}
 
@@ -307,7 +340,10 @@ export default function Dashboard() {
                 {!atVaultLimit && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.3 }}>
                     <button onClick={handleNewVaultClick}
-                      className="w-full min-h-[160px] md:min-h-[180px] p-5 rounded-xl border border-dashed border-border hover:border-primary/30 bg-card/50 flex flex-col items-center justify-center gap-3 transition-all group">
+                      className="w-full min-h-[160px] md:min-h-[180px] p-5 rounded-xl border border-dashed flex flex-col items-center justify-center gap-3 transition-all group"
+                      style={{ background: "hsl(220, 18%, 9%)", borderColor: "hsl(220, 14%, 20%)" }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = "hsl(175, 80%, 50%, 0.3)")}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = "hsl(220, 14%, 20%)")}>
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                         <Plus className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
@@ -343,6 +379,35 @@ export default function Dashboard() {
             >
               {createVault.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Vault"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent className="bg-card border-border mx-4 w-[calc(100vw-2rem)] max-w-sm text-center">
+          <div className="py-2">
+            <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <DialogTitle className="text-foreground text-lg mb-2">Delete Vault?</DialogTitle>
+            <p className="text-muted-foreground text-sm mb-1">
+              You are about to permanently delete <strong className="text-foreground">"{deleteTarget?.name}"</strong> and all its memories.
+            </p>
+            <p className="text-destructive text-xs mb-6 font-medium">This cannot be undone.</p>
+            <div className="space-y-3">
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => deleteTarget && deleteVault.mutate(deleteTarget.id)}
+                disabled={deleteVault.isPending}
+              >
+                {deleteVault.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4 mr-2" /> Delete vault and all memories</>}
+              </Button>
+              <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => setDeleteTarget(null)}>
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
