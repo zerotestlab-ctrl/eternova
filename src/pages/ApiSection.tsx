@@ -180,31 +180,68 @@ export default function ApiSection() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">One-Line Integration</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-2">One-Click Integrations</h2>
+            <p className="text-sm text-muted-foreground mb-4">Copy these snippets directly into your AI tools — no technical setup required.</p>
             <div className="space-y-4">
+
+              {/* Claude */}
+              <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(220, 14%, 18%)", background: "hsl(220, 18%, 10%)" }}>
+                <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "hsl(220, 14%, 18%)" }}>
+                  <div>
+                    <span className="text-sm font-semibold text-foreground">🤖 For Claude (Copy into Project Instructions)</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">Paste this into Claude's "Project Instructions" box — done.</p>
+                  </div>
+                  <button onClick={() => handleCopy(`Before answering, query my VibeVault memory: curl -s -X POST ${queryEndpoint} -H "X-API-Key: YOUR_API_KEY" -H "Content-Type: application/json" -d '{"message": "{{USER_QUERY}}", "vault_id": "YOUR_VAULT_ID"}' | jq .answer`, "claude")} className="text-muted-foreground hover:text-foreground transition-colors ml-3 flex-shrink-0 flex items-center gap-1.5 text-xs border border-border rounded-lg px-3 py-1.5 hover:border-primary/30">
+                    {copied === "claude" ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied === "claude" ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+                <pre className="p-4 text-xs font-mono text-foreground overflow-x-auto leading-relaxed" style={{ background: "hsl(220, 20%, 7%)" }}>{`Before answering, query my VibeVault memory:
+curl -s -X POST ${queryEndpoint} \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"message": "{{USER_QUERY}}", "vault_id": "YOUR_VAULT_ID"}' | jq .answer`}</pre>
+              </div>
+
+              {/* curl */}
+              <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(220, 14%, 18%)", background: "hsl(220, 18%, 10%)" }}>
+                <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "hsl(220, 14%, 18%)" }}>
+                  <div>
+                    <span className="text-sm font-semibold text-foreground">⚡ Quick Test (Terminal / Postman)</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">Run this in your terminal to test instantly.</p>
+                  </div>
+                  <button onClick={() => handleCopy(`curl -X POST ${queryEndpoint} -H "X-API-Key: YOUR_KEY" -H "Content-Type: application/json" -d '{"message": "What did I learn?", "vault_id": "YOUR_VAULT_ID"}'`, "curl")} className="text-muted-foreground hover:text-foreground transition-colors ml-3 flex-shrink-0 flex items-center gap-1.5 text-xs border border-border rounded-lg px-3 py-1.5 hover:border-primary/30">
+                    {copied === "curl" ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied === "curl" ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+                <pre className="p-4 text-xs font-mono text-foreground overflow-x-auto leading-relaxed" style={{ background: "hsl(220, 20%, 7%)" }}>{`curl -X POST ${queryEndpoint} \\
+  -H "X-API-Key: YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "What did I learn about pricing?",
+    "vault_id": "YOUR_VAULT_ID"
+  }'`}</pre>
+              </div>
+
+              {/* Python */}
               <CodeBlock
-                title="Claude / MCP"
-                onCopy={() => handleCopy("claude", "claude")}
-                copied={copied === "claude"}
-                code={`# Add to your Claude project system prompt:
-"For context, query my VibeVault: 
-curl -s ${queryEndpoint} \\
-  -H 'X-API-Key: $VV_KEY' \\
-  -d '{\"message\": USER_QUERY, \"vault_id\": \"YOUR_VAULT_ID\"}'"`}
-              />
-              <CodeBlock
-                title="Python / LangGraph"
-                onCopy={() => handleCopy("python", "python")}
+                title="🐍 Python / LangGraph / n8n"
+                onCopy={() => handleCopy(`import requests\n\ndef query_vault(message, vault_id, api_key):\n    resp = requests.post(\n        "${queryEndpoint}",\n        headers={"X-API-Key": api_key},\n        json={"message": message, "vault_id": vault_id}\n    )\n    return resp.json()["answer"]`, "python")}
                 copied={copied === "python"}
                 code={`import requests
 
-def query_vault(message: str, vault_id: str, api_key: str):
+def query_vault(message: str, vault_id: str, api_key: str) -> str:
     resp = requests.post(
         "${queryEndpoint}",
         headers={"X-API-Key": api_key},
-        json={"message": message, "vault_id": vault_id, "top_k": 5}
+        json={"message": message, "vault_id": vault_id}
     )
-    return resp.json()  # {"answer": "...", "memories": [...]}`}
+    return resp.json()["answer"]  # Clean natural language answer
+
+# Usage:
+answer = query_vault("What are my key product decisions?", "YOUR_VAULT_ID", "YOUR_API_KEY")
+print(answer)`}
               />
             </div>
           </div>

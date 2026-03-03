@@ -173,9 +173,9 @@ export default function VaultViewer() {
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "hsl(220, 20%, 6%)" }}>
       {/* Header */}
-      <header className="border-b border-border bg-card/50 px-4 md:px-6 py-3 flex items-center justify-between gap-3 sticky top-0 z-10">
+      <header className="border-b px-4 md:px-6 py-3 flex items-center justify-between gap-3 sticky top-0 z-10" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
             <ArrowLeft className="w-5 h-5" />
