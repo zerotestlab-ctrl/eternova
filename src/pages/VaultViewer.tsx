@@ -173,7 +173,7 @@ export default function VaultViewer() {
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "hsl(220, 20%, 6%)" }}>
+    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "hsl(220, 20%, 6%)" }}>
       {/* Header */}
       <header className="border-b px-4 md:px-6 py-3 flex items-center justify-between gap-3 sticky top-0 z-10" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
         <div className="flex items-center gap-3 min-w-0">
@@ -191,19 +191,19 @@ export default function VaultViewer() {
           <div className="flex rounded-lg border border-border overflow-hidden">
             <button
               onClick={() => setActiveTab("timeline")}
-              className={`px-2 md:px-3 py-1.5 text-xs flex items-center gap-1 transition-colors ${activeTab === "timeline" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              className={`px-3 py-2 text-xs flex items-center gap-1.5 transition-colors min-h-[40px] ${activeTab === "timeline" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <Layers className="w-3 h-3" /> <span className="hidden sm:inline">Timeline</span>
+              <Layers className="w-3.5 h-3.5" /> <span className="hidden xs:inline sm:inline">Timeline</span>
             </button>
             <button
               onClick={() => setActiveTab("graph")}
-              className={`px-2 md:px-3 py-1.5 text-xs flex items-center gap-1 transition-colors border-l border-border ${activeTab === "graph" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              className={`px-3 py-2 text-xs flex items-center gap-1.5 transition-colors border-l border-border min-h-[40px] ${activeTab === "graph" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <Brain className="w-3 h-3" /> <span className="hidden sm:inline">Graph</span>
+              <Brain className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Graph</span>
             </button>
           </div>
-          <Button variant={showChat ? "hero" : "hero-outline"} size="sm" onClick={() => setShowChat(!showChat)} className="text-xs">
-            <MessageSquare className="w-3.5 h-3.5" /> <span className="hidden sm:inline ml-1">Test Memory</span>
+          <Button variant={showChat ? "hero" : "hero-outline"} size="sm" onClick={() => setShowChat(!showChat)} className="text-xs min-h-[40px] px-3">
+            <MessageSquare className="w-3.5 h-3.5" /> <span className="hidden sm:inline ml-1">Memory</span>
           </Button>
         </div>
       </header>
@@ -241,7 +241,7 @@ export default function VaultViewer() {
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           {activeTab === "timeline" ? (
-            <div className="p-4 md:p-6 max-w-4xl mx-auto">
+            <div className="p-4 sm:p-5 md:p-6 max-w-4xl mx-auto w-full">
               {memories.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
                   <Brain className="w-12 h-12 opacity-30" />
@@ -271,7 +271,7 @@ export default function VaultViewer() {
                         className={`flex gap-3 md:gap-4 group`}
                       >
                         {/* Timeline dot */}
-                        <div className="flex flex-col items-center flex-shrink-0 pt-3 hidden sm:flex">
+                        <div className="hidden sm:flex flex-col items-center flex-shrink-0 pt-3">
                           <div className={`w-2.5 h-2.5 rounded-full border-2 flex-shrink-0 ${isHighlighted ? "bg-primary border-primary" : "bg-card border-border group-hover:border-primary/50"} transition-colors`} />
                           {i < displayedMemories.length - 1 && (
                             <div className="w-px flex-1 bg-border mt-1 min-h-[20px]" />
@@ -279,7 +279,7 @@ export default function VaultViewer() {
                         </div>
 
                         {/* Card */}
-                        <div className={`flex-1 mb-3 p-3 md:p-4 rounded-xl border transition-all cursor-pointer ${
+                        <div className={`flex-1 mb-3 p-4 md:p-5 rounded-xl border transition-all cursor-pointer min-h-[80px] ${
                           isHighlighted
                             ? "border-primary/40 bg-primary/5 shadow-[0_0_12px_hsl(173,70%,30%/0.15)]"
                             : "border-border bg-card hover:border-primary/20 hover:bg-card/80"
@@ -335,23 +335,26 @@ export default function VaultViewer() {
             </div>
           ) : (
             /* Graph View */
-            <div className="h-full min-h-[500px] relative overflow-auto">
+            <div className="h-full min-h-[60vh] md:min-h-[500px] relative">
               {memories.length === 0 ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
                   <Brain className="w-12 h-12 opacity-30" />
                   <p className="text-sm text-center px-4">No memories yet. <Link to="/upload" className="text-primary hover:underline">Upload documents</Link> to get started.</p>
                 </div>
               ) : (
-                <div className="w-full h-full min-h-[500px] min-w-[600px]">
+                <div className="w-full h-full min-h-[60vh] md:min-h-[500px]">
                   <ReactFlow
                     nodes={nodes}
                     edges={edges}
                     fitView
-                    fitViewOptions={{ padding: 0.3 }}
+                    fitViewOptions={{ padding: 0.25 }}
                     proOptions={{ hideAttribution: true }}
                     style={{ background: "hsl(220, 20%, 6%)" }}
-                    minZoom={0.3}
-                    maxZoom={2}
+                    minZoom={0.2}
+                    maxZoom={3}
+                    panOnScroll={false}
+                    zoomOnPinch
+                    panOnDrag
                   >
                     <Background color="hsl(220, 14%, 14%)" gap={40} size={1} />
                     <Controls style={{ background: "hsl(220, 18%, 12%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "8px" }} />
@@ -366,10 +369,10 @@ export default function VaultViewer() {
         <AnimatePresence>
           {showChat && (
             <motion.div
-              initial={{ opacity: 0, x: 20, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: "auto" }}
-              exit={{ opacity: 0, x: 20, width: 0 }}
-              className="border-l flex flex-col fixed right-0 top-0 bottom-0 z-20 w-full sm:w-96 sm:relative sm:top-auto sm:bottom-auto sm:right-auto sm:z-auto"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="border-l flex flex-col fixed right-0 top-0 bottom-0 z-20 w-full sm:w-[380px] md:w-[400px] sm:relative sm:top-auto sm:bottom-auto sm:right-auto sm:z-auto"
               style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 9%)" }}
             >
               <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
@@ -421,10 +424,10 @@ export default function VaultViewer() {
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleChat()}
-                  className="bg-muted/50 border-border text-sm"
+                  className="bg-muted/50 border-border text-base sm:text-sm min-h-[48px] sm:min-h-[40px]"
                   disabled={chatLoading}
                 />
-                <Button variant="hero" size="icon" onClick={handleChat} disabled={chatLoading || !chatInput.trim()}>
+                <Button variant="hero" size="icon" onClick={handleChat} disabled={chatLoading || !chatInput.trim()} className="min-w-[48px] min-h-[48px] sm:min-h-[40px]">
                   {chatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 </Button>
               </div>
