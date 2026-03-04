@@ -11,6 +11,7 @@ import VaultViewer from "./pages/VaultViewer";
 import UploadWizard from "./pages/UploadWizard";
 import ApiSection from "./pages/ApiSection";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 

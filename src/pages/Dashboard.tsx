@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink, Trash2, AlertTriangle } from "lucide-react";
+import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink, Trash2, AlertTriangle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
