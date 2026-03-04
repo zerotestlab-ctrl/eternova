@@ -102,12 +102,12 @@ export default function UploadWizard() {
   const processingSteps = ["Parsing documents...", "Extracting facts with AI...", "Generating embeddings..."];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 px-4 md:px-6 py-3 flex items-center gap-3">
-        <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"><ArrowLeft className="w-5 h-5" /></Link>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <header className="border-b border-border bg-card/50 px-4 md:px-6 py-4 flex items-center gap-3 sticky top-0 z-10">
+        <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-muted/50"><ArrowLeft className="w-5 h-5" /></Link>
         <div>
-          <h1 className="font-semibold text-foreground text-sm md:text-base">Upload Wizard</h1>
-          <p className="text-xs text-muted-foreground">Upload documents to extract memories</p>
+          <h1 className="font-semibold text-foreground text-base md:text-lg">Upload Wizard</h1>
+          <p className="text-sm text-muted-foreground">Upload documents to extract memories</p>
         </div>
       </header>
 
@@ -123,7 +123,7 @@ export default function UploadWizard() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 max-w-2xl">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 max-w-2xl">
         <div className="flex items-center gap-2 md:gap-4 mb-8 md:mb-12 overflow-x-auto pb-1">
           {stepNames.map((step, i) => (
             <div key={step} className="flex items-center gap-2 flex-1">
@@ -160,13 +160,13 @@ export default function UploadWizard() {
               </div>
 
               <div onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
-                <p className="text-foreground font-medium mb-2">Drop files here or click to browse</p>
-                <p className="text-sm text-muted-foreground mb-4">PDFs, TXT, chat exports, Notion ZIP</p>
+                className={`border-2 border-dashed rounded-xl p-8 sm:p-12 md:p-16 text-center transition-all min-h-[200px] sm:min-h-[240px] flex flex-col items-center justify-center ${isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+                <Upload className="w-12 h-12 sm:w-10 sm:h-10 text-muted-foreground mx-auto mb-4" />
+                <p className="text-foreground font-medium text-base mb-2">Drop files here or tap to browse</p>
+                <p className="text-sm text-muted-foreground mb-5">PDFs, TXT, chat exports, Notion ZIP</p>
                 <label>
                   <input type="file" multiple className="hidden" onChange={handleFileInput} accept=".pdf,.txt,.md,.zip,.json,.csv" />
-                  <Button variant="hero-outline" size="sm" asChild><span>Browse files</span></Button>
+                  <Button variant="hero-outline" size="default" className="min-h-[48px] px-6" asChild><span>Browse files</span></Button>
                 </label>
               </div>
 
@@ -180,8 +180,8 @@ export default function UploadWizard() {
                       <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive text-xs">✕</button>
                     </div>
                   ))}
-                  <Button variant="hero" className="w-full mt-4" onClick={startProcessing} disabled={!selectedVaultId}>
-                    <Sparkles className="w-4 h-4" /> Process {files.length} file{files.length > 1 ? "s" : ""} with AI
+                  <Button variant="hero" className="w-full mt-4 min-h-[52px] text-base" onClick={startProcessing} disabled={!selectedVaultId}>
+                    <Sparkles className="w-4 h-4 mr-2" /> Process {files.length} file{files.length > 1 ? "s" : ""} with AI
                   </Button>
                 </div>
               )}

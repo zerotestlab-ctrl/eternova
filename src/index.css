@@ -57,10 +57,32 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Prevent horizontal overflow globally */
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* 16px base on mobile, 15px on desktop */
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 15px;
+    }
+  }
+
+  /* Bigger touch targets on mobile */
+  @media (max-width: 640px) {
+    button, a, [role="button"] {
+      min-height: 44px;
+    }
   }
 }
 

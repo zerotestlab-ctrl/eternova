@@ -169,8 +169,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen" style={{ background: "hsl(220, 20%, 6%)" }}>
       <div className="flex">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 min-h-screen border-r p-4" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
+        {/* Desktop Sidebar — always visible on lg+ */}
+        <aside className="hidden lg:flex flex-col w-64 min-h-screen border-r p-5 flex-shrink-0" style={{ borderColor: "hsl(220, 14%, 16%)", background: "hsl(220, 18%, 8%)" }}>
           <SidebarContent />
         </aside>
 
@@ -206,25 +206,30 @@ export default function Dashboard() {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-10">
+        <main className="flex-1 min-w-0 p-4 sm:p-5 md:p-6 lg:p-10 overflow-x-hidden">
           {/* Mobile Header */}
-          <div className="flex items-center justify-between mb-6 lg:hidden">
+          <div className="flex items-center justify-between mb-5 lg:hidden">
             <div className="flex items-center gap-3">
               <button
-                className="text-muted-foreground hover:text-foreground p-1"
+                className="text-muted-foreground hover:text-foreground p-2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-lg hover:bg-muted/50"
                 onClick={() => setSidebarOpen(true)}
+                aria-label="Open menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
               <Link to="/" className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-primary" />
-                <span className="font-bold text-foreground">VibeVault</span>
+                <span className="font-bold text-foreground text-base">VibeVault</span>
               </Link>
             </div>
             <div className="flex items-center gap-2">
-              <Link to="/upload"><Button variant="hero" size="sm"><Upload className="w-4 h-4" /><span className="hidden sm:inline ml-1">Upload</span></Button></Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
-                <LogOut className="w-4 h-4" />
+              <Link to="/upload">
+                <Button variant="hero" size="sm" className="min-h-[44px] px-4">
+                  <Upload className="w-4 h-4" /><span className="hidden sm:inline ml-1.5">Upload</span>
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={handleNewVaultClick} className="min-h-[44px] px-3 text-muted-foreground hover:text-foreground">
+                <Plus className="w-4 h-4" /><span className="hidden sm:inline ml-1.5">New</span>
               </Button>
             </div>
           </div>
@@ -254,25 +259,25 @@ export default function Dashboard() {
               <p className="text-muted-foreground text-xs mt-0.5 truncate">{user?.email ?? "Welcome back"}</p>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
+            {/* Stats — 1 col mobile, 2 col sm, 4 col desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
               {stats.map((s, i) => (
                 <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}
-                  className="p-3 md:p-4 rounded-xl border"
+                  className="p-4 md:p-5 rounded-xl border"
                   style={{ background: "hsl(220, 18%, 10%)", borderColor: "hsl(220, 14%, 18%)" }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate">{s.label}</span>
+                    <s.icon className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-sm text-muted-foreground">{s.label}</span>
                   </div>
-                  <p className="text-xl md:text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-2xl md:text-3xl font-bold text-foreground">{s.value}</p>
                 </motion.div>
               ))}
             </div>
 
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-foreground">Your Vaults</h2>
-              <Button variant="hero" size="sm" className="lg:hidden" onClick={handleNewVaultClick}>
-                <Plus className="w-4 h-4" /> New
+              <h2 className="text-lg md:text-xl font-semibold text-foreground">Your Vaults</h2>
+              <Button variant="hero" size="sm" className="lg:hidden min-h-[44px] px-4" onClick={handleNewVaultClick}>
+                <Plus className="w-4 h-4 mr-1" /> New Vault
               </Button>
             </div>
 
@@ -293,36 +298,35 @@ export default function Dashboard() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {vaults.map((vault, i) => (
                   <motion.div key={vault.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05, duration: 0.3 }}>
                     <div className="relative p-4 md:p-5 rounded-xl border transition-all duration-300 group"
                       style={{ background: "hsl(220, 18%, 10%)", borderColor: "hsl(220, 14%, 18%)" }}
                       onMouseEnter={e => (e.currentTarget.style.borderColor = "hsl(175, 80%, 50%, 0.3)")}
                       onMouseLeave={e => (e.currentTarget.style.borderColor = "hsl(220, 14%, 18%)")}>
-                      {/* Delete button */}
-                      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <button
-                          onClick={async (e) => {
-                            e.preventDefault(); e.stopPropagation();
-                            // Export vault memories as JSON
-                            const { data } = await supabase.from("memories").select("content, source_file, source_date, fact_type, created_at").eq("vault_id", vault.id);
-                            const blob = new Blob([JSON.stringify({ vault: vault.name, exported_at: new Date().toISOString(), memories: data ?? [] }, null, 2)], { type: "application/json" });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement("a"); a.href = url; a.download = `${vault.name.replace(/\s+/g, "_")}_memories.json`; a.click(); URL.revokeObjectURL(url);
-                          }}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                          title="Export memories as JSON"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: vault.id, name: vault.name }); }}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Delete vault"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      {/* Action buttons — always visible on touch, hover on desktop */}
+                      <div className="absolute top-3 right-3 flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                         <button
+                           onClick={async (e) => {
+                             e.preventDefault(); e.stopPropagation();
+                             const { data } = await supabase.from("memories").select("content, source_file, source_date, fact_type, created_at").eq("vault_id", vault.id);
+                             const blob = new Blob([JSON.stringify({ vault: vault.name, exported_at: new Date().toISOString(), memories: data ?? [] }, null, 2)], { type: "application/json" });
+                             const url = URL.createObjectURL(blob);
+                             const a = document.createElement("a"); a.href = url; a.download = `${vault.name.replace(/\s+/g, "_")}_memories.json`; a.click(); URL.revokeObjectURL(url);
+                           }}
+                           className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                           title="Export memories as JSON"
+                         >
+                           <Download className="w-4 h-4" />
+                         </button>
+                         <button
+                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: vault.id, name: vault.name }); }}
+                           className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                           title="Delete vault"
+                         >
+                           <Trash2 className="w-4 h-4" />
+                         </button>
                       </div>
 
                       <Link to={`/vault/${vault.id}`} className="block">
