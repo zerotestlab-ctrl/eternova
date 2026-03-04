@@ -42,6 +42,7 @@ const App = () => (
             <Route path="/upload" element={<ProtectedRoute><UploadWizard /></ProtectedRoute>} />
             <Route path="/api" element={<ProtectedRoute><ApiSection /></ProtectedRoute>} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
