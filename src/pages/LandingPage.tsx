@@ -168,6 +168,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <p>&copy; 2026 ZeroTest Lab. All rights reserved.</p>
           </div>
         </div>

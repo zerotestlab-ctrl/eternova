@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Check, ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { Upload, FileText, Check, ArrowLeft, Loader2, Sparkles, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -110,6 +110,18 @@ export default function UploadWizard() {
           <p className="text-xs text-muted-foreground">Upload documents to extract memories</p>
         </div>
       </header>
+
+      {/* Privacy Banner */}
+      <div className="border-b border-primary/20 bg-primary/5 px-4 md:px-6 py-3">
+        <div className="container mx-auto max-w-2xl flex items-center gap-3">
+          <ShieldCheck className="w-4 h-4 text-primary flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            <span className="text-foreground font-medium">Your data is encrypted, 100% private, and yours forever.</span>{" "}
+            We never train on your data. Delete everything anytime.{" "}
+            <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+          </p>
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 max-w-2xl">
         <div className="flex items-center gap-2 md:gap-4 mb-8 md:mb-12 overflow-x-auto pb-1">
