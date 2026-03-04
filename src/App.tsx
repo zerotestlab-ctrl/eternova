@@ -12,6 +12,7 @@ import UploadWizard from "./pages/UploadWizard";
 import ApiSection from "./pages/ApiSection";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
