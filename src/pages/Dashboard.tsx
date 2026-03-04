@@ -301,13 +301,29 @@ export default function Dashboard() {
                       onMouseEnter={e => (e.currentTarget.style.borderColor = "hsl(175, 80%, 50%, 0.3)")}
                       onMouseLeave={e => (e.currentTarget.style.borderColor = "hsl(220, 14%, 18%)")}>
                       {/* Delete button */}
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: vault.id, name: vault.name }); }}
-                        className="absolute top-3 right-3 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 z-10"
-                        title="Delete vault"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault(); e.stopPropagation();
+                            // Export vault memories as JSON
+                            const { data } = await supabase.from("memories").select("content, source_file, source_date, fact_type, created_at").eq("vault_id", vault.id);
+                            const blob = new Blob([JSON.stringify({ vault: vault.name, exported_at: new Date().toISOString(), memories: data ?? [] }, null, 2)], { type: "application/json" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a"); a.href = url; a.download = `${vault.name.replace(/\s+/g, "_")}_memories.json`; a.click(); URL.revokeObjectURL(url);
+                          }}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="Export memories as JSON"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: vault.id, name: vault.name }); }}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete vault"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
 
                       <Link to={`/vault/${vault.id}`} className="block">
                         <div className="flex items-start justify-between mb-3">
