@@ -11,6 +11,7 @@ import VaultViewer from "./pages/VaultViewer";
 import UploadWizard from "./pages/UploadWizard";
 import ApiSection from "./pages/ApiSection";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/vault/:id" element={<ProtectedRoute><VaultViewer /></ProtectedRoute>} />
             <Route path="/upload" element={<ProtectedRoute><UploadWizard /></ProtectedRoute>} />
             <Route path="/api" element={<ProtectedRoute><ApiSection /></ProtectedRoute>} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

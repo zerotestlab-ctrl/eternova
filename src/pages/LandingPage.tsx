@@ -166,7 +166,10 @@ export default function LandingPage() {
             <span className="font-semibold text-sm text-foreground">VibeVault</span>
             <span className="text-xs text-muted-foreground font-mono">by ZeroTest Lab</span>
           </div>
-          <p className="text-xs text-muted-foreground">&copy; 2026 ZeroTest Lab. All rights reserved.</p>
+          <div className="flex items-center gap-6 text-xs text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <p>&copy; 2026 ZeroTest Lab. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
