@@ -13,8 +13,8 @@ const fadeUp = {
 };
 
 const features = [
-  { icon: Upload, title: "Upload Anything", desc: "PDFs, chat exports, Notion zips, raw text. We handle the chaos." },
-  { icon: Brain, title: "LLM Extraction", desc: "AI extracts clean facts, relations, and timestamps automatically." },
+  { icon: Upload, title: "Upload Anything", desc: "PDFs, chat exports, Notion zips, screenshots, URLs, voice notes. Just throw it in." },
+  { icon: Brain, title: "LLM Extraction", desc: "AI extracts clean facts, relations, behavioral patterns, and timestamps automatically." },
   { icon: Database, title: "Vector Storage", desc: "1536-dim embeddings stored in pgvector for instant semantic recall." },
   { icon: Network, title: "Knowledge Graph", desc: "Interactive graph visualization of your facts and relationships." },
   { icon: Search, title: "Semantic Search", desc: "Query your vault with natural language. Find anything, instantly." },
@@ -36,7 +36,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <Brain className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-bold text-lg text-foreground">VibeVault</span>
+            <span className="font-bold text-lg text-foreground">Eternova</span>
             <span className="text-xs text-muted-foreground font-mono ml-1">by ZeroTest Lab</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
@@ -45,6 +45,11 @@ export default function LandingPage() {
             <Link to="/auth">
               <Button variant="hero-outline" size="sm">Sign in</Button>
             </Link>
+            <Link to="/auth">
+              <Button variant="hero" size="sm">Start Free</Button>
+            </Link>
+          </div>
+          <div className="flex md:hidden items-center gap-2">
             <Link to="/auth">
               <Button variant="hero" size="sm">Start Free</Button>
             </Link>
@@ -61,7 +66,7 @@ export default function LandingPage() {
           <motion.div className="max-w-3xl mx-auto text-center" initial="hidden" animate="visible">
             <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-mono mb-8">
               <Zap className="w-3.5 h-3.5" />
-              Personal memory for AI agents
+              The eternal memory layer for your indie agents
             </motion.div>
 
             <motion.h1 custom={1} variants={fadeUp} className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1] mb-6">
@@ -70,7 +75,7 @@ export default function LandingPage() {
             </motion.h1>
 
             <motion.p custom={2} variants={fadeUp} className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
-              The personal memory layer for indie agents and Claude projects. Extract facts, build knowledge graphs, query with natural language.
+              The eternal memory layer for indie agents and Claude projects. Extract facts, build behavioral profiles, query with natural language.
             </motion.p>
 
             <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -86,7 +91,7 @@ export default function LandingPage() {
 
             <motion.div custom={4} variants={fadeUp} className="mt-12 font-mono text-xs text-muted-foreground">
               <code className="px-3 py-1.5 rounded-md bg-muted/50 border border-border">
-                {"curl -X POST vibevault.app/api/query -d '{message: \"What did I learn about RAG?\"}'"}
+                {"curl -X POST eternova.app/api/query -d '{message: \"What did I learn about RAG?\"}'"}
               </code>
             </motion.div>
           </motion.div>
@@ -163,7 +168,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-sm text-foreground">VibeVault</span>
+            <span className="font-semibold text-sm text-foreground">Eternova</span>
             <span className="text-xs text-muted-foreground font-mono">by ZeroTest Lab</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">

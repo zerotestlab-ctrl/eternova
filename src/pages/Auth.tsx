@@ -59,8 +59,8 @@ export default function Auth() {
           <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4 glow-primary">
             <Brain className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome to VibeVault</h1>
-          <p className="text-muted-foreground text-sm mt-1">Your personal memory layer</p>
+          <h1 className="text-2xl font-bold text-foreground">Welcome to Eternova</h1>
+          <p className="text-muted-foreground text-sm mt-1">The eternal memory layer for your agents</p>
         </div>
 
         <div className="p-6 rounded-xl border border-border bg-card/80 backdrop-blur space-y-4">

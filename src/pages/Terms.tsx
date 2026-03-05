@@ -11,7 +11,7 @@ export default function Terms() {
             <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
               <Brain className="w-4 h-4 text-primary" />
             </div>
-            <span className="font-bold text-foreground">VibeVault</span>
+            <span className="font-bold text-foreground">Eternova</span>
             <span className="text-xs text-muted-foreground font-mono ml-1">by ZeroTest Lab</span>
           </Link>
           <Link to="/">
@@ -28,23 +28,23 @@ export default function Terms() {
             <FileText className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-3">Terms of Service</h1>
-          <p className="text-muted-foreground">Last updated: March 2026 · VibeVault by ZeroTest Lab</p>
+          <p className="text-muted-foreground">Last updated: March 2026 · Eternova by ZeroTest Lab</p>
         </div>
 
         <div className="space-y-10 text-sm leading-relaxed text-muted-foreground">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using VibeVault, you agree to be bound by these Terms of Service. If you do not agree, please do not use the service.</p>
+            <p>By accessing or using Eternova, you agree to be bound by these Terms of Service. If you do not agree, please do not use the service.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">2. Service Description</h2>
-            <p>VibeVault is a personal memory management platform that allows users to upload documents, extract structured facts, and query their knowledge base using AI. The service is provided by ZeroTest Lab.</p>
+            <p>Eternova is a personal memory management platform that allows users to upload documents, extract structured facts, and query their knowledge base using AI. The service is provided by ZeroTest Lab.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">3. Your Data & Ownership</h2>
-            <p className="mb-2">You retain full ownership of all content you upload to VibeVault. We do not claim any intellectual property rights over your data. Specifically:</p>
+            <p className="mb-2">You retain full ownership of all content you upload to Eternova. We do not claim any intellectual property rights over your data. Specifically:</p>
             <ul className="space-y-2 list-none">
               {[
                 "All documents, memories, and facts you upload remain exclusively yours.",
@@ -62,7 +62,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">4. Acceptable Use</h2>
-            <p className="mb-2">You agree not to use VibeVault to:</p>
+            <p className="mb-2">You agree not to use Eternova to:</p>
             <ul className="space-y-2 list-none">
               {[
                 "Upload or store illegal, harmful, or infringing content.",
@@ -90,7 +90,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">7. Disclaimers & Limitation of Liability</h2>
-            <p>VibeVault is provided "as is" without warranties of any kind. ZeroTest Lab is not liable for any indirect, incidental, or consequential damages arising from use of the service. Our total liability shall not exceed the amount you paid in the past 12 months.</p>
+            <p>Eternova is provided "as is" without warranties of any kind. ZeroTest Lab is not liable for any indirect, incidental, or consequential damages arising from use of the service. Our total liability shall not exceed the amount you paid in the past 12 months.</p>
           </section>
 
           <section>
@@ -107,7 +107,7 @@ export default function Terms() {
 
       <footer className="border-t border-border/40 px-6 py-8 mt-10">
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <span>© 2026 ZeroTest Lab · VibeVault</span>
+          <span>© 2026 ZeroTest Lab · Eternova</span>
           <div className="flex items-center gap-4">
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>

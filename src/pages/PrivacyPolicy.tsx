@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
       <nav className="border-b border-border/40 px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
               <Brain className="w-4 h-4 text-primary" />
             </div>
-            <span className="font-bold text-foreground">VibeVault</span>
+            <span className="font-bold text-foreground">Eternova</span>
             <span className="text-xs text-muted-foreground font-mono ml-1">by ZeroTest Lab</span>
           </Link>
           <Link to="/">
@@ -29,11 +28,10 @@ export default function PrivacyPolicy() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-3">Privacy Policy</h1>
-          <p className="text-muted-foreground">Last updated: March 2026 · VibeVault by ZeroTest Lab</p>
+          <p className="text-muted-foreground">Last updated: March 2026 · Eternova by ZeroTest Lab</p>
         </div>
 
         <div className="space-y-10 text-sm leading-relaxed">
-          {/* Principles */}
           <section>
             <h2 className="text-lg font-semibold text-foreground mb-4">Our Core Principles</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -86,9 +84,9 @@ export default function PrivacyPolicy() {
             <h2 className="text-lg font-semibold text-foreground mb-3">Infrastructure & Security</h2>
             <ul className="space-y-2 text-muted-foreground list-none">
               {[
-                "Database: Supabase (PostgreSQL) with Row Level Security enforced on all tables.",
+                "Database: PostgreSQL with Row Level Security enforced on all tables.",
                 "Storage encryption: AES-256 at rest, TLS 1.3 in transit.",
-                "Authentication: Supabase Auth with email verification and optional OAuth.",
+                "Authentication: Email verification and optional OAuth.",
                 "AI processing: Lovable AI Gateway — queries processed in-flight, not persisted.",
                 "Hosting: Deployed on secure cloud infrastructure with automatic backups.",
               ].map((item, i) => (
@@ -127,17 +125,17 @@ export default function PrivacyPolicy() {
 
           <div className="p-5 rounded-xl border border-primary/20 bg-primary/5 text-center">
             <p className="text-foreground font-semibold mb-1">Your data is encrypted, private, and yours forever.</p>
-            <p className="text-muted-foreground text-xs">VibeVault is built on the principle that personal memory is sacred.</p>
+            <p className="text-muted-foreground text-xs">Eternova is built on the principle that personal memory is sacred.</p>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border/40 px-6 py-8 mt-10">
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <span>© 2026 ZeroTest Lab · VibeVault</span>
+          <span>© 2026 ZeroTest Lab · Eternova</span>
           <div className="flex items-center gap-4">
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           </div>
         </div>
