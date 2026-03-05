@@ -378,6 +378,7 @@ export default function VaultViewer() {
               <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
                 <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-primary" /> Memory Playground
+                  <span className="text-xs text-muted-foreground font-normal hidden sm:inline">· try "respond like me"</span>
                 </h3>
                 <button onClick={() => setShowChat(false)} className="text-muted-foreground hover:text-foreground">
                   <X className="w-4 h-4" />
