@@ -133,7 +133,7 @@ export default function Dashboard() {
         <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
           <Brain className="w-4 h-4 text-primary" />
         </div>
-        <span className="font-bold text-foreground">VibeVault</span>
+        <span className="font-bold text-foreground">Eternova</span>
       </Link>
       <nav className="space-y-1 flex-1">
         <SidebarLink icon={Folder} label="Vaults" active onClick={() => setSidebarOpen(false)} />
@@ -219,7 +219,7 @@ export default function Dashboard() {
               </button>
               <Link to="/" className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-primary" />
-                <span className="font-bold text-foreground text-base">VibeVault</span>
+                <span className="font-bold text-foreground text-base">Eternova</span>
               </Link>
             </div>
             <div className="flex items-center gap-2">

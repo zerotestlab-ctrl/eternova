@@ -21,13 +21,12 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = user.id;
     const { vault_id, files } = await req.json();
 
     if (!vault_id || !files?.length) {
@@ -53,7 +52,7 @@ serve(async (req) => {
       `=== FILE: ${f.name} ===\n${f.content}`
     ).join("\n\n");
 
-    // Use AI to extract facts
+    // ── STEP 1: Extract factual memories ──────────────────────────────────
     const extractResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -61,18 +60,18 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
-            content: `You are a knowledge extraction system. Extract factual statements from the provided documents.
+            content: `You are a knowledge extraction system for Eternova — the eternal memory layer for indie founders. Extract factual statements from the provided documents.
 Return a JSON object with:
 - "facts": array of strings (each fact is a single, clear, self-contained statement)
 - "relations": array of objects with {from, to, relation} showing how facts relate
 
 Rules:
 - Each fact should be concise (1-2 sentences max)
-- Focus on actionable insights, specific data, key learnings
+- Focus on actionable insights, specific data, key learnings, decisions made
 - Extract 10-50 facts depending on content length
 - Return only valid JSON, nothing else`,
           },
@@ -97,44 +96,95 @@ Rules:
     const facts: string[] = extracted.facts ?? [];
     const relations: any[] = extracted.relations ?? [];
 
-    // Generate embeddings for each fact using AI
-    let embeddingsCreated = 0;
-    const memoriesToInsert = [];
+    // ── STEP 2: Extract Behavioral Memory profile ──────────────────────────
+    const behaviorResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are a behavioral pattern analyst for Eternova. Analyze the writing style, tone, preferences, and personality of the author based on the documents provided.
 
-    for (const fact of facts) {
-      // Use simple text-based embedding via AI (since we use Lovable AI gateway)
-      // Store the fact with a placeholder embedding (we'll use semantic search via AI)
-      memoriesToInsert.push({
+Extract behavioral profile facts — things like:
+- Communication preferences ("User prefers short direct replies", "Uses bullet points often")
+- Tone and style ("Writes in a motivational founder tone", "Informal, uses emojis occasionally")
+- Recurring themes ("Often mentions ZeroTest Lab", "Frequently discusses RAG and AI agents")
+- Dislikes or preferences ("Hates asterisks in AI responses", "Prefers plain text over markdown")
+- Decision-making patterns ("Makes bold bets early", "Iterates fast based on user feedback")
+
+Return a JSON object with:
+- "behaviors": array of strings, each a clear behavioral fact about the author (5–15 facts)
+
+Return only valid JSON, nothing else.`,
+          },
+          {
+            role: "user",
+            content: `Analyze the behavioral patterns of the author in these documents:\n\n${combinedContent.slice(0, 8000)}`,
+          },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+
+    let behaviorFacts: string[] = [];
+    if (behaviorResponse.ok) {
+      try {
+        const behaviorResult = await behaviorResponse.json();
+        const behaviorData = JSON.parse(behaviorResult.choices[0].message.content);
+        behaviorFacts = behaviorData.behaviors ?? [];
+      } catch {
+        // Behavioral extraction is best-effort
+        console.log("Behavioral extraction parsing failed, continuing...");
+      }
+    }
+
+    // ── Build memories to insert ──────────────────────────────────────────
+    const memoriesToInsert = [
+      ...facts.map((fact: string) => ({
         vault_id,
         user_id: userId,
         content: fact,
         fact_type: "fact",
         source_file: files[0]?.name ?? "unknown",
-        embedding: null, // embeddings generated separately or via pgvector
+        embedding: null,
         metadata: { relations: relations.filter((r: any) => r.from === fact || r.to === fact) },
-      });
-    }
+      })),
+      ...behaviorFacts.map((behavior: string) => ({
+        vault_id,
+        user_id: userId,
+        content: behavior,
+        fact_type: "behavior",
+        source_file: files[0]?.name ?? "unknown",
+        embedding: null,
+        metadata: {},
+      })),
+    ];
 
     if (memoriesToInsert.length > 0) {
       const { error: insertError } = await supabase.from("memories").insert(memoriesToInsert);
       if (insertError) throw insertError;
-      embeddingsCreated = memoriesToInsert.length;
     }
 
-    // Update vault stats
+    // ── Update vault stats ────────────────────────────────────────────────
     const { data: currentVault } = await supabase.from("vaults").select("fact_count, memory_count, token_count").eq("id", vault_id).maybeSingle();
     const tokenEstimate = combinedContent.length / 4;
 
     await supabase.from("vaults").update({
       fact_count: (currentVault?.fact_count ?? 0) + facts.length,
-      memory_count: (currentVault?.memory_count ?? 0) + facts.length,
+      memory_count: (currentVault?.memory_count ?? 0) + memoriesToInsert.length,
       token_count: (currentVault?.token_count ?? 0) + Math.round(tokenEstimate),
     }).eq("id", vault_id);
 
     return new Response(JSON.stringify({
       facts_count: facts.length,
       relations_count: relations.length,
-      embeddings_count: embeddingsCreated,
+      embeddings_count: memoriesToInsert.length,
+      behavior_count: behaviorFacts.length,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
