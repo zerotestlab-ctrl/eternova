@@ -85,7 +85,7 @@ export default function ApiSection() {
         <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
         <div>
           <h1 className="font-semibold text-foreground">API Access</h1>
-          <p className="text-xs text-muted-foreground">Integrate VibeVault with your agents</p>
+          <p className="text-xs text-muted-foreground">Integrate Eternova with your agents</p>
         </div>
       </header>
 
