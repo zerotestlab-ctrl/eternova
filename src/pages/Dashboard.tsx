@@ -35,6 +35,18 @@ export default function Dashboard() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newVaultName, setNewVaultName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [copiedWebhookId, setCopiedWebhookId] = useState<string | null>(null);
+
+  const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const getWebhookUrl = (vaultId: string) =>
+    `https://${PROJECT_ID}.supabase.co/functions/v1/memory-webhook/${vaultId}`;
+
+  const copyWebhookUrl = (vaultId: string) => {
+    navigator.clipboard.writeText(getWebhookUrl(vaultId));
+    setCopiedWebhookId(vaultId);
+    toast({ title: "Copied!", description: "Webhook URL copied to clipboard." });
+    setTimeout(() => setCopiedWebhookId(null), 2000);
+  };
 
   const { data: vaults = [], isLoading } = useQuery({
     queryKey: ["vaults", user?.id],
