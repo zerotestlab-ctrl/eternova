@@ -1,73 +1,72 @@
-# Welcome to your Lovable project
+# Eternova – Eternal Memory Layer for Indie Agents
 
-## Project info
+Memory-powered. Founder-built. Let's ship.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Eternova is the dead-simple hosted memory layer so your Claude, Cursor, LangGraph, CrewAI, and other agents **never forget** your pricing, roadmap, customer notes, or founder vibe again.
 
-## How can I edit this code?
+Built in Nigeria by a solo vibe-coder using Grok + Lovable.dev. No SDK hell. No devops. Just upload your chaos and get a persistent brain.
 
-There are several ways of editing your application.
+Live at: https://eternova.xyz
 
-**Use Lovable**
+## Features
+- Upload anything: paste text, PDFs, screenshots, Notion exports, chat logs, URLs
+- Extracts facts + behavioral profile (your tone, writing style, "let's ship" energy)
+- Beautiful interactive knowledge graph
+- Memory Playground – ask questions in natural language
+- One-click API key for agents
+- Freemium: 1 vault free, Pro $9/mo unlimited (Paystack – works globally, USA/UK/Canada pay in their currency)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Quick Start (for users)
+1. Go to https://eternova.xyz
+2. Sign up (Google or magic link)
+3. Create a vault ("My Founder Brain")
+4. Upload or paste your notes, chats, PDFs
+5. Ask in Memory Playground: "What is my pricing strategy?" or "Write a tweet like me"
+6. Go to Integrations → copy API key
+7. Paste into your agent tool (Claude Project instructions, LangGraph node, etc.)
 
-Changes made via Lovable will be committed automatically to this repo.
+Pro upgrade: https://paystack.shop/pay/g5hpex4o97 ($9/mo)
 
-**Use your preferred IDE**
+## For Developers & Integrations
+API endpoint: POST https://eternova.xyz/functions/v1/vault-query  
+Headers: `Authorization: Bearer YOUR_API_KEY`  
+Body: `{ "message": "your query", "vault_id": "optional-uuid" }`  
+Response: `{ "answer": "text", "memories": [...] }`
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+See /integrations for Zapier, n8n, Gumloop, LangGraph, CrewAI, Claude API snippets. SDK coming soon.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Tech Stack
+- Frontend: Next.js 14 (App Router)
+- Backend: Supabase (auth, pgvector, storage)
+- LLM: Groq (fast & cheap)
+- Built with: Lovable.dev + Grok
 
-Follow these steps:
+## Running Locally
+1. Clone the repo:
+git clone https://github.com/zerotestlab-ctrl/eternova.git
+ cd eternova
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Install dependencies:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+   npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. Copy env example:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+   cp .env.example .env.local
 
-**Edit a file directly in GitHub**
+5. Fill .env.local with your keys (Supabase URL/anon key, Groq key, Paystack link).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+6. Run locally:
 
-**Use GitHub Codespaces**
+   npm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+7. Open http://localhost:3000
 
-## What technologies are used for this project?
+## Contributing
+Issues, PRs, feedback welcome. This is early — let's build together.
 
-This project is built with:
+## License
+MIT
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Built with ❤️ in Nigeria by @ZEROTESTLAB  
+If this helps your agent forget less, drop a star ⭐
