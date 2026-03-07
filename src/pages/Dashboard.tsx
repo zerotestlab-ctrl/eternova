@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink, Trash2, AlertTriangle, Download } from "lucide-react";
+import { Brain, Plus, Upload, Database, Search, Key, BarChart3, Folder, ArrowRight, LogOut, Loader2, Menu, X, Crown, ExternalLink, Trash2, AlertTriangle, Download, Webhook, Copy, Check, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +35,18 @@ export default function Dashboard() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newVaultName, setNewVaultName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [copiedWebhookId, setCopiedWebhookId] = useState<string | null>(null);
+
+  const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const getWebhookUrl = (vaultId: string) =>
+    `https://${PROJECT_ID}.supabase.co/functions/v1/memory-webhook/${vaultId}`;
+
+  const copyWebhookUrl = (vaultId: string) => {
+    navigator.clipboard.writeText(getWebhookUrl(vaultId));
+    setCopiedWebhookId(vaultId);
+    toast({ title: "Copied!", description: "Webhook URL copied to clipboard." });
+    setTimeout(() => setCopiedWebhookId(null), 2000);
+  };
 
   const { data: vaults = [], isLoading } = useQuery({
     queryKey: ["vaults", user?.id],
@@ -372,6 +384,71 @@ export default function Dashboard() {
                   </motion.div>
                 )}
               </div>
+            )}
+
+            {/* ── Instant Webhook Section ─────────────────────────────────────────── */}
+            {vaults.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }} className="mt-10 md:mt-12">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-primary" />
+                  </div>
+                  <h2 className="text-lg md:text-xl font-semibold text-foreground">Instant Webhook for Zapier &amp; Agents</h2>
+                </div>
+                <p className="text-muted-foreground text-sm mb-5 ml-11">
+                  Paste this into Zapier or any agent to auto-save memory forever.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {vaults.map((vault) => (
+                    <div
+                      key={vault.id}
+                      className="p-4 rounded-xl border flex flex-col gap-3"
+                      style={{ background: "hsl(220, 18%, 10%)", borderColor: "hsl(220, 14%, 18%)" }}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Webhook className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="font-medium text-foreground text-sm truncate">{vault.name}</span>
+                      </div>
+
+                      <div className="rounded-lg px-3 py-2 text-xs font-mono text-muted-foreground break-all select-all" style={{ background: "hsl(220, 20%, 7%)", border: "1px solid hsl(220, 14%, 16%)" }}>
+                        {getWebhookUrl(vault.id)}
+                      </div>
+
+                      <button
+                        onClick={() => copyWebhookUrl(vault.id)}
+                        className="flex items-center justify-center gap-2 w-full rounded-lg py-2.5 text-sm font-semibold transition-all min-h-[44px]"
+                        style={{
+                          background: copiedWebhookId === vault.id ? "hsl(142, 70%, 45%, 0.15)" : "hsl(175, 80%, 50%, 0.12)",
+                          color: copiedWebhookId === vault.id ? "hsl(142, 70%, 55%)" : "hsl(175, 80%, 55%)",
+                          border: `1px solid ${copiedWebhookId === vault.id ? "hsl(142, 70%, 45%, 0.3)" : "hsl(175, 80%, 50%, 0.25)"}`,
+                        }}
+                      >
+                        {copiedWebhookId === vault.id ? (
+                          <><Check className="w-4 h-4" /> Copied!</>
+                        ) : (
+                          <><Copy className="w-4 h-4" /> Copy Webhook URL</>
+                        )}
+                      </button>
+
+                      <p className="text-xs text-muted-foreground">
+                        POST <code className="text-primary/80">{"{ text, source }"}</code> · max 100/day
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick usage example */}
+                <div className="mt-4 p-4 rounded-xl border" style={{ background: "hsl(220, 18%, 9%)", borderColor: "hsl(220, 14%, 16%)" }}>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Quick Example (curl)</p>
+                  <pre className="text-xs text-primary/80 overflow-x-auto whitespace-pre-wrap break-all font-mono leading-relaxed">
+{`curl -X POST "${vaults[0] ? getWebhookUrl(vaults[0].id) : "<webhook-url>"}" \\
+  -H "X-API-Key: <your-api-key>" \\
+  -H "Content-Type: application/json" \\
+  -d '{"text": "Agent output here", "source": "claude-chat"}'`}
+                  </pre>
+                </div>
+              </motion.div>
             )}
           </motion.div>
         </main>
