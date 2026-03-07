@@ -1,12 +1,13 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "eternova",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "deploy": "vite build && vercel deploy --prod",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
