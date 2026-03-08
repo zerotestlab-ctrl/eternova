@@ -151,6 +151,7 @@ export default function Dashboard() {
         <SidebarLink icon={Folder} label="Vaults" active onClick={() => setSidebarOpen(false)} />
         <SidebarLink icon={Upload} label="Upload" href="/upload" onClick={() => setSidebarOpen(false)} />
         <SidebarLink icon={Key} label="API Keys" href="/api" onClick={() => setSidebarOpen(false)} />
+        <SidebarLink icon={Zap} label="Zapier" href="/zapier" onClick={() => setSidebarOpen(false)} />
       </nav>
       <div className="space-y-2">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">

@@ -265,14 +265,17 @@ export default function UploadWizard() {
                 </label>
 
                 <div className="pointer-events-none">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Upload className="w-8 h-8 text-primary" />
+                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors">
+                    <Upload className="w-10 h-10 text-primary" />
                   </div>
-                  <p className="text-foreground font-semibold text-lg mb-2">
-                    {isDragging ? "Drop it! 🎯" : "Throw anything here"}
+                  <p className="text-foreground font-bold text-xl mb-3">
+                    {isDragging ? "Drop it! 🎯" : "Just throw anything here — we remember it forever"}
                   </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-                    Text, chats, screenshots, PDFs, URLs, voice notes — we figure it out
+                  <p className="text-base font-semibold text-muted-foreground leading-relaxed max-w-sm mx-auto">
+                    📄 PDFs &nbsp;·&nbsp; 💬 Chats &nbsp;·&nbsp; 🖼️ Screenshots &nbsp;·&nbsp; 🔗 URLs &nbsp;·&nbsp; 📝 Notes
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto mt-2">
+                    Works with Claude chats, Gumloop outputs, screenshots, voice notes — anything!
                   </p>
                   <p className="text-xs text-primary/70 mt-3 font-mono">
                     drag & drop · tap to browse · ctrl+v to paste screenshot
