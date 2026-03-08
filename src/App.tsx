@@ -38,6 +38,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/zapier" element={<ZapierPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/vault/:id" element={<ProtectedRoute><VaultViewer /></ProtectedRoute>} />
             <Route path="/upload" element={<ProtectedRoute><UploadWizard /></ProtectedRoute>} />

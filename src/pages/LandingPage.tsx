@@ -42,6 +42,8 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+            <Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
+            <Link to="/zapier" className="hover:text-foreground transition-colors font-medium text-primary">Zapier</Link>
             <Link to="/auth">
               <Button variant="hero-outline" size="sm">Sign in</Button>
             </Link>
