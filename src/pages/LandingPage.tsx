@@ -149,7 +149,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 {tier.highlighted ? (
-                  <a href="https://paystack.shop/pay/4b8mdpttkf" target="_blank" rel="noopener noreferrer" className="block">
+                  <a href="https://paystack.shop/pay/g5hpex4o97" target="_blank" rel="noopener noreferrer" className="block">
                     <Button variant="hero" className="w-full">{tier.cta}</Button>
                   </a>
                 ) : (

@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const PAYSTACK_LINK = "https://paystack.shop/pay/4b8mdpttkf";
+const PAYSTACK_LINK = "https://paystack.shop/pay/g5hpex4o97";
 
 function SidebarLink({ icon: Icon, label, active, href, onClick }: { icon: any; label: string; active?: boolean; href?: string; onClick?: () => void }) {
   const content = (
