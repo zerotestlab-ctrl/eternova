@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+export const config = { auth: false };
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-api-key",
@@ -23,7 +25,7 @@ serve(async (req) => {
     const vault_id = pathParts[pathParts.length - 1];
 
     if (!vault_id || vault_id === "memory-webhook") {
-      return json({ success: false, error: "vault_id required in URL path: /api/webhook/{vault_id}" }, 400);
+      return json({ success: false, error: "vault_id required in URL path: /memory-webhook/{vault_id}" }, 400);
     }
 
     // ── Parse body ────────────────────────────────────────────────────────
@@ -42,65 +44,21 @@ serve(async (req) => {
       return json({ success: false, error: "text exceeds maximum length of 50,000 characters" }, 400);
     }
 
-    // ── Init admin client to validate vault + rate limiting ───────────────
+    // ── Init admin client ─────────────────────────────────────────────────
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // ── Auth: accept Bearer token OR X-API-Key header ─────────────────────
-    const authHeader = req.headers.get("Authorization");
-    const apiKeyHeader = req.headers.get("X-API-Key") || req.headers.get("x-api-key");
-
-    let userId: string | null = null;
-
-    if (authHeader?.startsWith("Bearer ")) {
-      // Supabase JWT token auth
-      const userClient = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_ANON_KEY")!,
-        { global: { headers: { Authorization: authHeader } } },
-      );
-      const { data: { user } } = await userClient.auth.getUser();
-      if (user) userId = user.id;
-    } else if (apiKeyHeader) {
-      // API key auth — hash and look up
-      const encoder = new TextEncoder();
-      const data = encoder.encode(apiKeyHeader);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const keyHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-      const { data: apiKey } = await supabaseAdmin
-        .from("api_keys")
-        .select("user_id")
-        .eq("key_hash", keyHash)
-        .maybeSingle();
-
-      if (apiKey) {
-        userId = apiKey.user_id;
-        // Update last_used_at
-        await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("key_hash", keyHash);
-      }
-    }
-
-    if (!userId) {
-      return json({
-        success: false,
-        error: "Unauthorized. Provide Authorization: Bearer <token> or X-API-Key: <key>",
-      }, 401);
-    }
-
-    // ── Verify user owns the vault ─────────────────────────────────────────
+    // ── Verify vault exists ────────────────────────────────────────────────
     const { data: vault, error: vaultError } = await supabaseAdmin
       .from("vaults")
-      .select("id, name, fact_count, memory_count, token_count")
+      .select("id, name, user_id, fact_count, memory_count, token_count")
       .eq("id", vault_id)
-      .eq("user_id", userId)
       .maybeSingle();
 
     if (vaultError || !vault) {
-      return json({ success: false, error: "Vault not found or access denied" }, 404);
+      return json({ success: false, error: "Vault not found" }, 404);
     }
 
     // ── Rate limiting: max 100 webhook calls per vault per day ────────────
@@ -175,7 +133,6 @@ Rules:
       const extracted = JSON.parse(aiResult.choices[0].message.content);
       facts = extracted.facts ?? [];
     } catch {
-      // If JSON parse fails, treat entire text as one fact
       facts = [text.slice(0, 500)];
     }
 
@@ -186,7 +143,7 @@ Rules:
     // ── Step 2: Insert memories ───────────────────────────────────────────
     const memoriesToInsert = facts.map((fact: string) => ({
       vault_id,
-      user_id: userId,
+      user_id: vault.user_id,
       content: fact,
       fact_type: "fact",
       source_file: source,
