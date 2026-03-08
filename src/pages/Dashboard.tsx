@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const PAYSTACK_LINK = "https://paystack.shop/pay/4b8mdpttkf";
+const PAYSTACK_LINK = "https://paystack.shop/pay/g5hpex4o97";
 
 function SidebarLink({ icon: Icon, label, active, href, onClick }: { icon: any; label: string; active?: boolean; href?: string; onClick?: () => void }) {
   const content = (
@@ -248,101 +248,6 @@ export default function Dashboard() {
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
 
-            {/* ══════════════════════════════════════════════════════════════
-                INSTANT ZAPIER MEMORY — hero CTA section
-            ══════════════════════════════════════════════════════════════ */}
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-8 md:mb-10 rounded-2xl border-2 overflow-hidden relative"
-              style={{ borderColor: "hsl(142, 70%, 45%, 0.6)", background: "linear-gradient(135deg, hsl(142, 60%, 10%) 0%, hsl(220, 20%, 8%) 60%, hsl(200, 70%, 10%) 100%)" }}
-            >
-              {/* Glow blobs */}
-              <div className="absolute top-0 left-0 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(142, 70%, 45%, 0.12) 0%, transparent 70%)", transform: "translate(-30%, -30%)" }} />
-              <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(200, 80%, 55%, 0.1) 0%, transparent 70%)", transform: "translate(30%, 30%)" }} />
-
-              <div className="relative z-10 p-5 sm:p-7 md:p-8">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4 uppercase tracking-widest" style={{ background: "hsl(142, 70%, 45%, 0.18)", color: "hsl(142, 70%, 60%)", border: "1px solid hsl(142, 70%, 45%, 0.35)" }}>
-                  <Zap className="w-3 h-3" />
-                  New — 60-Second Setup
-                </div>
-
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground mb-2 leading-tight">
-                  Instant Zapier Memory
-                  <span className="block text-lg sm:text-xl md:text-2xl font-semibold mt-1" style={{ color: "hsl(142, 70%, 60%)" }}>
-                    Auto-save anything, forever. ⚡
-                  </span>
-                </h2>
-
-                <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-xl">
-                  Works with this exact Zapier template → <strong className="text-foreground">never forget anything again.</strong>
-                </p>
-
-                {/* 3-step list */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 mb-7">
-                  {[
-                    { n: "1", text: "Click Copy URL below" },
-                    { n: "2", text: "Click the Zap Template button" },
-                    { n: "3", text: "Paste URL & turn on your Zap" },
-                  ].map(({ n, text }) => (
-                    <div key={n} className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-black" style={{ background: "hsl(142, 70%, 45%, 0.25)", color: "hsl(142, 70%, 60%)", border: "1px solid hsl(142, 70%, 45%, 0.4)" }}>{n}</div>
-                      <span className="text-sm text-foreground font-medium">{text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {/* Copy Webhook URL — uses first vault */}
-                  <button
-                    onClick={() => {
-                      if (vaults.length === 0) {
-                        toast({ title: "No vaults yet", description: "Create a vault first, then copy its webhook URL.", variant: "destructive" });
-                        return;
-                      }
-                      copyWebhookUrl(vaults[0].id);
-                    }}
-                    className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm font-black transition-all min-h-[52px] flex-1 sm:flex-none shadow-lg"
-                    style={{
-                      background: copiedWebhookId === vaults[0]?.id ? "hsl(142, 60%, 35%)" : "hsl(142, 65%, 42%)",
-                      color: "hsl(0, 0%, 100%)",
-                      boxShadow: "0 4px 24px hsl(142, 70%, 45%, 0.35)",
-                    }}
-                  >
-                    {copiedWebhookId === vaults[0]?.id ? (
-                      <><Check className="w-5 h-5" /> Copied! ✓</>
-                    ) : (
-                      <><Copy className="w-5 h-5" /> Copy My Webhook URL</>
-                    )}
-                  </button>
-
-                  {/* Open Zap Template */}
-                  <a
-                    href="https://zapier.com/shared/5e143bc89ccdc157b31c86abb8435e4970809173"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm font-black transition-all min-h-[52px] flex-1 sm:flex-none shadow-lg"
-                    style={{
-                      background: "linear-gradient(135deg, hsl(210, 90%, 50%), hsl(200, 85%, 45%))",
-                      color: "hsl(0, 0%, 100%)",
-                      boxShadow: "0 4px 24px hsl(210, 90%, 50%, 0.35)",
-                    }}
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                    Open Ready Zap Template
-                  </a>
-                </div>
-
-                {vaults.length > 0 && (
-                  <p className="text-xs mt-3" style={{ color: "hsl(142, 60%, 50%)" }}>
-                    ↑ Copying URL for vault: <strong>{vaults[0].name}</strong>
-                  </p>
-                )}
-              </div>
-            </motion.div>
             {/* Desktop Header */}
             <div className="hidden lg:flex items-center justify-between mb-8">
               <div>

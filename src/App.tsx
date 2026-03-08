@@ -13,6 +13,7 @@ import ApiSection from "./pages/ApiSection";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import ZapierPage from "./pages/ZapierPage";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/zapier" element={<ZapierPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/vault/:id" element={<ProtectedRoute><VaultViewer /></ProtectedRoute>} />
             <Route path="/upload" element={<ProtectedRoute><UploadWizard /></ProtectedRoute>} />
