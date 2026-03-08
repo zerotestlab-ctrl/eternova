@@ -55,53 +55,55 @@ export default function ZapierPage() {
           </div>
           <span className="font-bold text-foreground text-lg">Eternova</span>
         </Link>
-        {user && (
+        {user ? (
           <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Dashboard
+          </Link>
+        ) : (
+          <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Sign in
           </Link>
         )}
       </nav>
 
       {/* Main */}
       <main className="flex-1 flex items-center justify-center px-5 py-16">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full max-w-lg text-center space-y-10">
 
           {/* Icon */}
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20">
             <Zap className="w-8 h-8 text-primary" />
           </div>
 
-          {/* Title */}
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground mb-4 leading-[1.1]">
-            Instant Zapier Memory
-            <span className="block text-2xl sm:text-3xl font-bold text-primary mt-1">
-              (60 seconds setup)
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
-            Give any AI agent permanent memory —<br className="hidden sm:block" />
-            no code, no API keys.
-          </p>
+          {/* Title + Subtitle */}
+          <div className="space-y-4">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground leading-[1.1]">
+              Instant Zapier Memory
+              <span className="block text-primary mt-1">(60 seconds setup)</span>
+            </h1>
+            <p className="text-lg sm:text-xl font-semibold text-muted-foreground leading-relaxed">
+              Give any AI agent permanent memory —<br className="hidden sm:block" />
+              no code, no API keys, no login.
+            </p>
+          </div>
 
           {/* Buttons */}
-          <div className="flex flex-col gap-3 mb-10">
+          <div className="flex flex-col gap-3">
             <button
               onClick={handleCopy}
-              className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 px-6 text-base font-black transition-all min-h-[58px] focus:outline-none focus:ring-2 focus:ring-offset-2"
+              className="flex items-center justify-center gap-3 w-full rounded-2xl py-5 px-6 text-lg font-black transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               style={{
                 background: copied
-                  ? "hsl(142, 55%, 32%)"
-                  : "hsl(142, 60%, 38%)",
+                  ? "hsl(142 55% 32%)"
+                  : "hsl(142 60% 38%)",
                 color: "#ffffff",
-                boxShadow: "0 6px 28px hsl(142 65% 42% / 0.4)",
+                boxShadow: "0 6px 28px hsl(142 65% 42% / 0.35)",
               }}
             >
               {copied ? (
-                <><Check className="w-5 h-5" /> Copied! ✓</>
+                <><Check className="w-5 h-5 flex-shrink-0" /> Copied! ✓</>
               ) : (
-                <><Copy className="w-5 h-5" /> Copy My Webhook URL</>
+                <><Copy className="w-5 h-5 flex-shrink-0" /> Copy My Webhook URL</>
               )}
             </button>
 
@@ -109,49 +111,49 @@ export default function ZapierPage() {
               href="https://zapier.com/shared/5e143bc89ccdc157b31c86abb8435e4970809173"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 px-6 text-base font-black transition-all min-h-[58px]"
+              className="flex items-center justify-center gap-3 w-full rounded-2xl py-5 px-6 text-lg font-black transition-all"
               style={{
-                background: "hsl(213, 90%, 50%)",
+                background: "hsl(213 90% 50%)",
                 color: "#ffffff",
-                boxShadow: "0 6px 28px hsl(213 90% 50% / 0.4)",
+                boxShadow: "0 6px 28px hsl(213 90% 50% / 0.35)",
               }}
             >
-              <ExternalLink className="w-5 h-5" />
+              <ExternalLink className="w-5 h-5 flex-shrink-0" />
               Open Ready Zapier Template
             </a>
           </div>
 
           {/* 3 Steps */}
-          <div className="flex flex-col gap-4 mb-8 text-left">
+          <div className="flex flex-col gap-5 text-left">
             {[
-              "Click Copy My Webhook URL",
-              "Click Open Ready Zapier Template",
-              "Paste and turn on",
+              "Click 'Copy My Webhook URL'",
+              "Click 'Open Ready Zapier Template'",
+              "Paste the URL into the Zap and turn it on",
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-4">
                 <div
-                  className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black"
+                  className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-base font-black"
                   style={{
                     background: "hsl(var(--primary) / 0.12)",
                     color: "hsl(var(--primary))",
-                    border: "1.5px solid hsl(var(--primary) / 0.3)",
+                    border: "2px solid hsl(var(--primary) / 0.3)",
                   }}
                 >
                   {i + 1}
                 </div>
-                <span className="text-foreground font-semibold text-base">{text}</span>
+                <span className="text-foreground font-semibold text-base sm:text-lg">{text}</span>
               </div>
             ))}
           </div>
 
-          {/* Note */}
-          <p className="text-muted-foreground text-sm">
-            Works with Claude, Gumloop, anything.{" "}
-            <span className="text-foreground font-semibold">Free forever.</span>
+          {/* Footer note */}
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Works instantly with Claude, Gumloop, any agent.{" "}
+            <span className="text-foreground font-semibold">Free tier has everything you need.</span>
           </p>
 
           {!user && (
-            <div className="mt-8 p-4 rounded-2xl border border-border bg-card text-sm text-muted-foreground">
+            <div className="p-4 rounded-2xl border border-border bg-card text-sm text-muted-foreground">
               <Link to="/auth" className="text-primary font-semibold hover:underline">
                 Sign in
               </Link>{" "}
