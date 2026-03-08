@@ -254,7 +254,7 @@ export default function UploadWizard() {
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                className={`relative border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all duration-300 min-h-[220px] sm:min-h-[260px] flex flex-col items-center justify-center cursor-pointer group ${
+                className={`relative border-2 border-dashed rounded-2xl p-10 sm:p-14 text-center transition-all duration-300 min-h-[264px] sm:min-h-[312px] flex flex-col items-center justify-center cursor-pointer group ${
                   isDragging
                     ? "border-primary bg-primary/8 scale-[1.01]"
                     : "border-border hover:border-primary/40 hover:bg-primary/3"
