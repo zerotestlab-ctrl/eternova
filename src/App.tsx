@@ -13,6 +13,7 @@ import ApiSection from "./pages/ApiSection";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import ZapierPage from "./pages/ZapierPage";
 
 const queryClient = new QueryClient();
 
